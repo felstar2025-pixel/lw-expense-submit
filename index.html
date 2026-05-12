@@ -307,6 +307,17 @@
     let selectedMimeType = "image/jpeg";
     let imageConfirmed = false;
 
+    const DRAFT_KEYS = [
+      "payer",
+      "paymentMethod",
+      "expenseType",
+      "content",
+      "purchasePlace",
+      "paymentDate",
+      "amount",
+      "memo"
+    ];
+
     /***** ロック画面 *****/
     window.checkAutoPasscode = (val) => {
       const errorText = document.getElementById("passcodeError");
@@ -609,7 +620,7 @@ function clearDraftInputs() {
       document.getElementById("confirmImageButton").classList.remove("hidden");
 
       clearDraftInputs();
-      
+
     }
 
     function submitAnother() {
