@@ -1,4 +1,4 @@
-<<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
@@ -42,30 +42,30 @@
   </div>
 
   <!-- ヘッダー -->
-  <header class="sticky top-0 z-30 bg-white/90 backdrop-blur-md px-4 py-2 border-b border-slate-200 shadow-sm">
+  <header class="sticky top-0 z-30 bg-white/90 backdrop-blur-md px-3 py-1.5 border-b border-slate-200 shadow-sm">
     <div class="max-w-md mx-auto flex justify-between items-center">
       <div>
         <h1 class="text-xl font-serif tracking-widest text-slate-800 leading-tight">phantom line</h1>
-        <p class="text-[10px] font-bold tracking-[0.25em] text-slate-400">EXPENSE SUBMIT</p>
+        <p class="text-[10px] font-bold tracking-[0.25em] text-slate-400 leading-tight">EXPENSE SUBMIT</p>
       </div>
-      <button onclick="resetForm()" class="text-[11px] font-bold text-slate-500 bg-slate-100 px-3 py-2 rounded-xl">
+      <button onclick="resetForm()" class="text-[10px] font-bold text-slate-500 bg-slate-100 px-2.5 py-1.5 rounded-lg">
         リセット
       </button>
     </div>
   </header>
 
   <!-- メイン -->
-  <main id="view_form" class="min-h-screen bg-slate-50 pb-10">
-    <div class="max-w-md mx-auto p-4">
+  <main id="view_form" class="min-h-screen bg-slate-50 pb-8">
+    <div class="max-w-md mx-auto p-3">
 
-      <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-5 mb-4">
+      <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-4 mb-3">
         <h2 class="font-extrabold text-lg text-slate-800 mb-1">経費提出</h2>
         <p class="text-xs text-slate-400 font-bold leading-relaxed">
           必須項目とレシート写真を入れて送信してください。支払日・金額・購入先は分かる範囲で大丈夫です。
         </p>
       </div>
 
-      <form id="expenseForm" onsubmit="submitExpense(event)" class="bg-white rounded-3xl shadow-sm border border-slate-200 p-5 flex flex-col gap-4">
+      <form id="expenseForm" onsubmit="submitExpense(event)" class="bg-white rounded-3xl shadow-sm border border-slate-200 p-4 flex flex-col gap-3">
 
         <!-- 支払者 -->
         <div>
@@ -137,10 +137,10 @@
         </div>
 
         <!-- 任意項目 -->
-        <div class="border-t border-slate-100 pt-4">
-          <p class="text-[11px] font-black text-slate-400 tracking-widest mb-3">OPTIONAL</p>
+        <div class="border-t border-slate-100 pt-3">
+          <p class="text-[10px] font-black text-slate-400 tracking-widest mb-2">OPTIONAL</p>
 
-          <div class="flex flex-col gap-4">
+          <div class="flex flex-col gap-3">
             <div>
               <label class="block text-xs font-bold text-slate-500 mb-1">購入先</label>
               <input
@@ -166,7 +166,7 @@
                 type="number"
                 id="amount"
                 inputmode="numeric"
-                placeholder="分かれば入力"
+                placeholder="入力"
                 class="w-full bg-slate-50 border border-slate-200 px-3 py-3 rounded-xl font-bold text-sm text-slate-800 focus:ring-2 focus:ring-lime-400 outline-none"
               />
             </div>
@@ -184,34 +184,52 @@
         </div>
 
         <!-- レシート写真 -->
-        <div class="border-t border-slate-100 pt-4">
+        <div class="border-t border-slate-100 pt-3">
           <label class="block text-xs font-bold text-slate-500 mb-2">
             レシート写真 <span class="text-red-500">*</span>
           </label>
 
           <input
             type="file"
-            id="receiptImage"
+            id="cameraImage"
             accept="image/*"
             capture="environment"
             class="hidden"
             onchange="handleImageSelected(event)"
           />
 
-          <button
-            type="button"
-            onclick="document.getElementById('receiptImage').click()"
-            class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold text-base shadow-md active:scale-[0.99] transition-transform"
-          >
-            📷 写真を撮る / 選ぶ
-          </button>
+          <input
+            type="file"
+            id="galleryImage"
+            accept="image/*"
+            class="hidden"
+            onchange="handleImageSelected(event)"
+          />
 
-          <div id="imagePreviewBox" class="hidden mt-4 bg-slate-50 border border-slate-200 rounded-2xl p-3">
+          <div class="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onclick="document.getElementById('cameraImage').click()"
+              class="bg-slate-900 text-white py-3.5 rounded-2xl font-bold text-sm shadow-md active:scale-[0.99] transition-transform"
+            >
+              📷 撮影する
+            </button>
+
+            <button
+              type="button"
+              onclick="document.getElementById('galleryImage').click()"
+              class="bg-white border border-slate-300 text-slate-700 py-3.5 rounded-2xl font-bold text-sm shadow-sm active:scale-[0.99] transition-transform"
+            >
+              🖼 写真から選ぶ
+            </button>
+          </div>
+
+          <div id="imagePreviewBox" class="hidden mt-3 bg-slate-50 border border-slate-200 rounded-2xl p-3">
             <img id="imagePreview" src="" class="w-full rounded-xl border border-slate-200 shadow-sm" />
             <div class="flex gap-2 mt-3">
               <button
                 type="button"
-                onclick="document.getElementById('receiptImage').click()"
+                onclick="document.getElementById('cameraImage').click()"
                 class="flex-1 bg-white border border-slate-200 text-slate-600 py-3 rounded-xl font-bold text-sm"
               >
                 撮り直す
@@ -235,7 +253,7 @@
         <button
           type="submit"
           id="submitButton"
-          class="w-full bg-lime-400 text-slate-900 py-4 rounded-2xl font-black text-base shadow-md mt-2 active:scale-[0.99] transition-transform"
+          class="w-full bg-lime-400 text-slate-900 py-4 rounded-2xl font-black text-base shadow-md mt-1 active:scale-[0.99] transition-transform"
         >
           送信する
         </button>
@@ -244,14 +262,14 @@
   </main>
 
   <!-- 送信中 -->
-  <main id="view_loading" class="hidden min-h-screen flex flex-col items-center justify-center bg-white px-6 text-center">
+  <main id="view_loading" class="hidden min-h-screen flex-col items-center justify-center bg-white px-6 text-center">
     <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-900 mb-4"></div>
     <p class="font-bold text-slate-800 text-lg">送信中...</p>
     <p class="text-xs text-slate-400 font-bold mt-2">写真を保存しています</p>
   </main>
 
   <!-- 完了 -->
-  <main id="view_success" class="hidden min-h-screen flex flex-col items-center justify-center bg-white px-6 text-center">
+  <main id="view_success" class="hidden min-h-screen flex-col items-center justify-center bg-white px-6 text-center">
     <div class="text-7xl mb-6 animate-bounce">✅</div>
     <h2 class="text-3xl font-extrabold text-slate-800 mb-2">提出完了</h2>
     <p class="text-sm text-slate-500 font-bold leading-relaxed mb-8">
@@ -263,7 +281,7 @@
   </main>
 
   <!-- エラー -->
-  <main id="view_error" class="hidden min-h-screen flex flex-col items-center justify-center bg-white px-6 text-center">
+  <main id="view_error" class="hidden min-h-screen flex-col items-center justify-center bg-white px-6 text-center">
     <div class="text-7xl mb-6">⚠️</div>
     <h2 class="text-3xl font-extrabold text-slate-800 mb-2">送信エラー</h2>
     <p id="errorMessage" class="text-sm text-slate-500 font-bold leading-relaxed mb-8">
@@ -367,6 +385,8 @@
       document.getElementById("imagePreviewBox").classList.remove("hidden");
       document.getElementById("imageStatus").classList.add("hidden");
       document.getElementById("confirmImageButton").classList.remove("hidden");
+
+      event.target.value = "";
     }
 
     function confirmImage() {
@@ -450,12 +470,12 @@
       }
 
       if (!selectedImageBase64) {
-        showError("レシート写真を撮影してください。");
+        showError("レシート写真を撮影または選択してください。");
         return;
       }
 
       if (!imageConfirmed) {
-        showError("撮影した写真を確認して「この写真でOK」を押してください。");
+        showError("選択した写真を確認して「この写真でOK」を押してください。");
         return;
       }
 
@@ -503,7 +523,8 @@
       document.getElementById("paymentDate").value = "";
       document.getElementById("amount").value = "";
       document.getElementById("memo").value = "";
-      document.getElementById("receiptImage").value = "";
+      document.getElementById("cameraImage").value = "";
+      document.getElementById("galleryImage").value = "";
 
       selectedImageBase64 = "";
       selectedMimeType = "image/jpeg";
@@ -535,7 +556,8 @@
       selectedMimeType = "image/jpeg";
       imageConfirmed = false;
 
-      document.getElementById("receiptImage").value = "";
+      document.getElementById("cameraImage").value = "";
+      document.getElementById("galleryImage").value = "";
       document.getElementById("imagePreview").src = "";
       document.getElementById("imagePreviewBox").classList.add("hidden");
       document.getElementById("imageStatus").classList.add("hidden");
