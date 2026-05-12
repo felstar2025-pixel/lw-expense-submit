@@ -347,6 +347,41 @@
       setupDraftAutoSave();
   });
 
+    /***** 入力途中の自動保存 *****/
+function setupDraftAutoSave() {
+  DRAFT_KEYS.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    el.addEventListener("input", () => {
+      localStorage.setItem("expense_draft_" + id, el.value);
+    });
+
+    el.addEventListener("change", () => {
+      localStorage.setItem("expense_draft_" + id, el.value);
+    });
+  });
+}
+
+function restoreDraftInputs() {
+  DRAFT_KEYS.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    const savedValue = localStorage.getItem("expense_draft_" + id);
+
+    if (savedValue !== null) {
+      el.value = savedValue;
+    }
+  });
+}
+
+function clearDraftInputs() {
+  DRAFT_KEYS.forEach(id => {
+    localStorage.removeItem("expense_draft_" + id);
+  });
+}  
+
     /***** 画面切り替え *****/
     function showView(name) {
       ["view_form", "view_loading", "view_success", "view_error"].forEach(id => {
@@ -542,6 +577,8 @@
       document.getElementById("imagePreviewBox").classList.add("hidden");
       document.getElementById("imageStatus").classList.add("hidden");
       document.getElementById("confirmImageButton").classList.remove("hidden");
+
+      clearDraftInputs();
     }
 
     function resetForm() {
@@ -570,6 +607,9 @@
       document.getElementById("imagePreviewBox").classList.add("hidden");
       document.getElementById("imageStatus").classList.add("hidden");
       document.getElementById("confirmImageButton").classList.remove("hidden");
+
+      clearDraftInputs();
+      
     }
 
     function submitAnother() {
