@@ -1,12 +1,555 @@
-<!DOCTYPE html>
+<<!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>phantom line Expense Submit</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body::-webkit-scrollbar { display: none; }
+    body { -ms-overflow-style: none; scrollbar-width: none; overscroll-behavior-y: none; }
+    @keyframes pop {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.03); }
+      100% { transform: scale(1); }
+    }
+    .animate-pop { animation: pop 0.25s ease-in-out; }
+  </style>
 </head>
-<body>
-  <h1>phantom line</h1>
-  <p>EXPENSE SUBMIT TEST</p>
+
+<body class="bg-white font-sans text-slate-800 m-0 p-0 overflow-x-hidden">
+
+  <!-- ロック画面 -->
+  <div id="lockScreen" class="fixed inset-0 z-[100] bg-white flex flex-col items-center justify-center transition-opacity duration-500">
+    <div class="flex flex-col items-center -mt-32">
+      <h1 class="text-3xl font-serif tracking-widest text-slate-900 mb-4">phantom line</h1>
+      <p class="text-xs font-bold tracking-[0.25em] text-slate-400 mb-14">EXPENSE SUBMIT</p>
+
+      <div class="relative">
+        <input
+          type="password"
+          id="passcodeInput"
+          maxlength="4"
+          oninput="checkAutoPasscode(this.value)"
+          placeholder="••••"
+          class="w-48 border-b border-slate-300 bg-transparent text-center text-3xl tracking-[0.5em] text-slate-700 focus:outline-none focus:border-slate-900 pb-2 transition-colors"
+        />
+        <p id="passcodeError" class="absolute top-full mt-4 w-full text-center text-[10px] text-red-400 font-bold tracking-widest opacity-0 transition-opacity">
+          INCORRECT
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ヘッダー -->
+  <header class="sticky top-0 z-30 bg-white/90 backdrop-blur-md px-4 py-2 border-b border-slate-200 shadow-sm">
+    <div class="max-w-md mx-auto flex justify-between items-center">
+      <div>
+        <h1 class="text-xl font-serif tracking-widest text-slate-800 leading-tight">phantom line</h1>
+        <p class="text-[10px] font-bold tracking-[0.25em] text-slate-400">EXPENSE SUBMIT</p>
+      </div>
+      <button onclick="resetForm()" class="text-[11px] font-bold text-slate-500 bg-slate-100 px-3 py-2 rounded-xl">
+        リセット
+      </button>
+    </div>
+  </header>
+
+  <!-- メイン -->
+  <main id="view_form" class="min-h-screen bg-slate-50 pb-10">
+    <div class="max-w-md mx-auto p-4">
+
+      <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-5 mb-4">
+        <h2 class="font-extrabold text-lg text-slate-800 mb-1">経費提出</h2>
+        <p class="text-xs text-slate-400 font-bold leading-relaxed">
+          必須項目とレシート写真を入れて送信してください。支払日・金額・購入先は分かる範囲で大丈夫です。
+        </p>
+      </div>
+
+      <form id="expenseForm" onsubmit="submitExpense(event)" class="bg-white rounded-3xl shadow-sm border border-slate-200 p-5 flex flex-col gap-4">
+
+        <!-- 支払者 -->
+        <div>
+          <label class="block text-xs font-bold text-slate-500 mb-1">
+            支払者 <span class="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            id="payer"
+            required
+            placeholder="名前を入力"
+            class="w-full bg-slate-50 border border-slate-200 px-3 py-3 rounded-xl font-bold text-sm text-slate-800 focus:ring-2 focus:ring-lime-400 outline-none"
+          />
+          <p class="text-[10px] text-slate-400 font-bold mt-1">一度入力すると、この端末に保存されます。</p>
+        </div>
+
+        <!-- 支払方法 -->
+        <div>
+          <label class="block text-xs font-bold text-slate-500 mb-1">
+            支払方法 <span class="text-red-500">*</span>
+          </label>
+          <select
+            id="paymentMethod"
+            required
+            class="w-full bg-slate-50 border border-slate-200 px-3 py-3 rounded-xl font-bold text-sm text-slate-800 focus:ring-2 focus:ring-lime-400 outline-none"
+          >
+            <option value="立替">立替</option>
+            <option value="会社支払い">会社支払い</option>
+            <option value="不明">不明</option>
+          </select>
+        </div>
+
+        <!-- 経費の種類 -->
+        <div>
+          <label class="block text-xs font-bold text-slate-500 mb-1">
+            経費の種類 <span class="text-red-500">*</span>
+          </label>
+          <select
+            id="expenseType"
+            required
+            class="w-full bg-slate-50 border border-slate-200 px-3 py-3 rounded-xl font-bold text-sm text-slate-800 focus:ring-2 focus:ring-lime-400 outline-none"
+          >
+            <option value="">選択してください</option>
+            <option value="備品">備品</option>
+            <option value="消耗品">消耗品</option>
+            <option value="交通費">交通費</option>
+            <option value="撮影関連">撮影関連</option>
+            <option value="イベント関連">イベント関連</option>
+            <option value="通信・アプリ">通信・アプリ</option>
+            <option value="飲食">飲食</option>
+            <option value="梱包・発送">梱包・発送</option>
+            <option value="その他">その他</option>
+            <option value="不明">不明</option>
+          </select>
+        </div>
+
+        <!-- 内容 -->
+        <div>
+          <label class="block text-xs font-bold text-slate-500 mb-1">
+            内容 <span class="text-red-500">*</span>
+          </label>
+          <textarea
+            id="content"
+            rows="2"
+            required
+            placeholder="何のために買ったか。例：撮影用小物、梱包テープなど"
+            class="w-full bg-slate-50 border border-slate-200 px-3 py-3 rounded-xl font-bold text-sm text-slate-800 focus:ring-2 focus:ring-lime-400 outline-none"
+          ></textarea>
+        </div>
+
+        <!-- 任意項目 -->
+        <div class="border-t border-slate-100 pt-4">
+          <p class="text-[11px] font-black text-slate-400 tracking-widest mb-3">OPTIONAL</p>
+
+          <div class="flex flex-col gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-500 mb-1">購入先</label>
+              <input
+                type="text"
+                id="purchasePlace"
+                placeholder="ローソン、Amazon、ダイソーなど"
+                class="w-full bg-slate-50 border border-slate-200 px-3 py-3 rounded-xl font-bold text-sm text-slate-800 focus:ring-2 focus:ring-lime-400 outline-none"
+              />
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-500 mb-1">支払日</label>
+              <input
+                type="date"
+                id="paymentDate"
+                class="w-full bg-slate-50 border border-slate-200 px-3 py-3 rounded-xl font-bold text-sm text-slate-800 focus:ring-2 focus:ring-lime-400 outline-none"
+              />
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-500 mb-1">支払金額</label>
+              <input
+                type="number"
+                id="amount"
+                inputmode="numeric"
+                placeholder="分かれば入力"
+                class="w-full bg-slate-50 border border-slate-200 px-3 py-3 rounded-xl font-bold text-sm text-slate-800 focus:ring-2 focus:ring-lime-400 outline-none"
+              />
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-500 mb-1">メモ</label>
+              <textarea
+                id="memo"
+                rows="2"
+                placeholder="補足があれば入力"
+                class="w-full bg-slate-50 border border-slate-200 px-3 py-3 rounded-xl font-bold text-sm text-slate-800 focus:ring-2 focus:ring-lime-400 outline-none"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- レシート写真 -->
+        <div class="border-t border-slate-100 pt-4">
+          <label class="block text-xs font-bold text-slate-500 mb-2">
+            レシート写真 <span class="text-red-500">*</span>
+          </label>
+
+          <input
+            type="file"
+            id="receiptImage"
+            accept="image/*"
+            capture="environment"
+            class="hidden"
+            onchange="handleImageSelected(event)"
+          />
+
+          <button
+            type="button"
+            onclick="document.getElementById('receiptImage').click()"
+            class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold text-base shadow-md active:scale-[0.99] transition-transform"
+          >
+            📷 写真を撮る / 選ぶ
+          </button>
+
+          <div id="imagePreviewBox" class="hidden mt-4 bg-slate-50 border border-slate-200 rounded-2xl p-3">
+            <img id="imagePreview" src="" class="w-full rounded-xl border border-slate-200 shadow-sm" />
+            <div class="flex gap-2 mt-3">
+              <button
+                type="button"
+                onclick="document.getElementById('receiptImage').click()"
+                class="flex-1 bg-white border border-slate-200 text-slate-600 py-3 rounded-xl font-bold text-sm"
+              >
+                撮り直す
+              </button>
+              <button
+                type="button"
+                onclick="confirmImage()"
+                id="confirmImageButton"
+                class="flex-1 bg-lime-400 text-slate-900 py-3 rounded-xl font-bold text-sm"
+              >
+                この写真でOK
+              </button>
+            </div>
+            <p id="imageStatus" class="hidden text-center text-xs font-bold text-lime-700 mt-3">
+              写真を確認しました
+            </p>
+          </div>
+        </div>
+
+        <!-- 送信 -->
+        <button
+          type="submit"
+          id="submitButton"
+          class="w-full bg-lime-400 text-slate-900 py-4 rounded-2xl font-black text-base shadow-md mt-2 active:scale-[0.99] transition-transform"
+        >
+          送信する
+        </button>
+      </form>
+    </div>
+  </main>
+
+  <!-- 送信中 -->
+  <main id="view_loading" class="hidden min-h-screen flex flex-col items-center justify-center bg-white px-6 text-center">
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-900 mb-4"></div>
+    <p class="font-bold text-slate-800 text-lg">送信中...</p>
+    <p class="text-xs text-slate-400 font-bold mt-2">写真を保存しています</p>
+  </main>
+
+  <!-- 完了 -->
+  <main id="view_success" class="hidden min-h-screen flex flex-col items-center justify-center bg-white px-6 text-center">
+    <div class="text-7xl mb-6 animate-bounce">✅</div>
+    <h2 class="text-3xl font-extrabold text-slate-800 mb-2">提出完了</h2>
+    <p class="text-sm text-slate-500 font-bold leading-relaxed mb-8">
+      経費情報とレシート写真を送信しました。
+    </p>
+    <button onclick="submitAnother()" class="w-full max-w-xs bg-slate-900 text-white py-4 rounded-2xl font-bold text-lg shadow-lg">
+      続けて提出する
+    </button>
+  </main>
+
+  <!-- エラー -->
+  <main id="view_error" class="hidden min-h-screen flex flex-col items-center justify-center bg-white px-6 text-center">
+    <div class="text-7xl mb-6">⚠️</div>
+    <h2 class="text-3xl font-extrabold text-slate-800 mb-2">送信エラー</h2>
+    <p id="errorMessage" class="text-sm text-slate-500 font-bold leading-relaxed mb-8">
+      送信できませんでした。
+    </p>
+    <button onclick="showView('form')" class="w-full max-w-xs bg-slate-900 text-white py-4 rounded-2xl font-bold text-lg shadow-lg">
+      入力画面に戻る
+    </button>
+  </main>
+
+  <script>
+    /***** 設定 *****/
+    const SECRET_PASSCODE = "7140";
+
+    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzK9E5kd5VsGC2nq_hG9fFZgwD43tbRyXHLmchtH_WWuggrfYBGiE1b-a83Lf-_tcnx/exec";
+
+    let selectedImageBase64 = "";
+    let selectedMimeType = "image/jpeg";
+    let imageConfirmed = false;
+
+    /***** ロック画面 *****/
+    window.checkAutoPasscode = (val) => {
+      const errorText = document.getElementById("passcodeError");
+      errorText.classList.add("opacity-0");
+
+      if (val.length === 4) {
+        if (val === SECRET_PASSCODE) {
+          document.getElementById("lockScreen").classList.add("opacity-0");
+          setTimeout(() => {
+            document.getElementById("lockScreen").classList.add("hidden");
+          }, 500);
+          sessionStorage.setItem("expense_unlocked", "true");
+        } else {
+          errorText.classList.remove("opacity-0");
+          document.getElementById("passcodeInput").value = "";
+        }
+      }
+    };
+
+    if (sessionStorage.getItem("expense_unlocked") === "true") {
+      document.getElementById("lockScreen").classList.add("hidden");
+    }
+
+    /***** 初期表示 *****/
+    window.addEventListener("DOMContentLoaded", () => {
+      const savedPayer = localStorage.getItem("expense_payer");
+      const savedPaymentMethod = localStorage.getItem("expense_paymentMethod");
+
+      if (savedPayer) {
+        document.getElementById("payer").value = savedPayer;
+      }
+
+      if (savedPaymentMethod) {
+        document.getElementById("paymentMethod").value = savedPaymentMethod;
+      }
+    });
+
+    /***** 画面切り替え *****/
+    function showView(name) {
+      ["view_form", "view_loading", "view_success", "view_error"].forEach(id => {
+        const el = document.getElementById(id);
+        el.classList.add("hidden");
+        el.classList.remove("block", "flex");
+      });
+
+      const target = document.getElementById("view_" + name);
+
+      if (name === "form") {
+        target.classList.remove("hidden");
+        target.classList.add("block");
+      } else {
+        target.classList.remove("hidden");
+        target.classList.add("flex");
+      }
+
+      window.scrollTo(0, 0);
+    }
+
+    /***** 写真選択 *****/
+    async function handleImageSelected(event) {
+      const file = event.target.files[0];
+
+      if (!file) return;
+
+      if (!file.type.startsWith("image/")) {
+        showError("画像ファイルを選択してください。");
+        return;
+      }
+
+      imageConfirmed = false;
+      selectedMimeType = "image/jpeg";
+
+      try {
+        selectedImageBase64 = await resizeImageToBase64(file, 1600, 0.78);
+      } catch (err) {
+        selectedImageBase64 = await fileToBase64(file);
+        selectedMimeType = file.type || "image/jpeg";
+      }
+
+      document.getElementById("imagePreview").src = selectedImageBase64;
+      document.getElementById("imagePreviewBox").classList.remove("hidden");
+      document.getElementById("imageStatus").classList.add("hidden");
+      document.getElementById("confirmImageButton").classList.remove("hidden");
+    }
+
+    function confirmImage() {
+      if (!selectedImageBase64) {
+        showError("先にレシート写真を撮影してください。");
+        return;
+      }
+
+      imageConfirmed = true;
+      document.getElementById("imageStatus").classList.remove("hidden");
+      document.getElementById("confirmImageButton").classList.add("hidden");
+
+      const box = document.getElementById("imagePreviewBox");
+      box.classList.remove("animate-pop");
+      void box.offsetWidth;
+      box.classList.add("animate-pop");
+    }
+
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function resizeImageToBase64(file, maxSize, quality) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+
+        reader.onload = () => {
+          const img = new Image();
+
+          img.onload = () => {
+            let width = img.width;
+            let height = img.height;
+
+            if (width > height && width > maxSize) {
+              height = Math.round((height * maxSize) / width);
+              width = maxSize;
+            } else if (height > maxSize) {
+              width = Math.round((width * maxSize) / height);
+              height = maxSize;
+            }
+
+            const canvas = document.createElement("canvas");
+            canvas.width = width;
+            canvas.height = height;
+
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, width, height);
+
+            selectedMimeType = "image/jpeg";
+            resolve(canvas.toDataURL("image/jpeg", quality));
+          };
+
+          img.onerror = reject;
+          img.src = reader.result;
+        };
+
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    /***** 送信 *****/
+    async function submitExpense(event) {
+      event.preventDefault();
+
+      const payer = document.getElementById("payer").value.trim();
+      const paymentMethod = document.getElementById("paymentMethod").value;
+      const expenseType = document.getElementById("expenseType").value;
+      const content = document.getElementById("content").value.trim();
+
+      if (!payer || !paymentMethod || !expenseType || !content) {
+        showError("必須項目を入力してください。");
+        return;
+      }
+
+      if (!selectedImageBase64) {
+        showError("レシート写真を撮影してください。");
+        return;
+      }
+
+      if (!imageConfirmed) {
+        showError("撮影した写真を確認して「この写真でOK」を押してください。");
+        return;
+      }
+
+      localStorage.setItem("expense_payer", payer);
+      localStorage.setItem("expense_paymentMethod", paymentMethod);
+
+      const payload = {
+        payer: payer,
+        paymentMethod: paymentMethod,
+        expenseType: expenseType,
+        content: content,
+        purchasePlace: document.getElementById("purchasePlace").value.trim(),
+        paymentDate: document.getElementById("paymentDate").value,
+        amount: document.getElementById("amount").value,
+        memo: document.getElementById("memo").value.trim(),
+        imageBase64: selectedImageBase64,
+        mimeType: selectedMimeType
+      };
+
+      showView("loading");
+
+      try {
+        await fetch(GAS_WEB_APP_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: {
+            "Content-Type": "text/plain;charset=utf-8"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        clearFormAfterSubmit();
+        showView("success");
+
+      } catch (err) {
+        console.error(err);
+        showError("送信に失敗しました。通信環境を確認して、もう一度お試しください。");
+      }
+    }
+
+    function clearFormAfterSubmit() {
+      document.getElementById("expenseType").value = "";
+      document.getElementById("content").value = "";
+      document.getElementById("purchasePlace").value = "";
+      document.getElementById("paymentDate").value = "";
+      document.getElementById("amount").value = "";
+      document.getElementById("memo").value = "";
+      document.getElementById("receiptImage").value = "";
+
+      selectedImageBase64 = "";
+      selectedMimeType = "image/jpeg";
+      imageConfirmed = false;
+
+      document.getElementById("imagePreview").src = "";
+      document.getElementById("imagePreviewBox").classList.add("hidden");
+      document.getElementById("imageStatus").classList.add("hidden");
+      document.getElementById("confirmImageButton").classList.remove("hidden");
+    }
+
+    function resetForm() {
+      if (!confirm("入力内容をリセットしますか？")) return;
+
+      document.getElementById("expenseForm").reset();
+
+      const savedPayer = localStorage.getItem("expense_payer");
+      const savedPaymentMethod = localStorage.getItem("expense_paymentMethod");
+
+      if (savedPayer) {
+        document.getElementById("payer").value = savedPayer;
+      }
+
+      if (savedPaymentMethod) {
+        document.getElementById("paymentMethod").value = savedPaymentMethod;
+      }
+
+      selectedImageBase64 = "";
+      selectedMimeType = "image/jpeg";
+      imageConfirmed = false;
+
+      document.getElementById("receiptImage").value = "";
+      document.getElementById("imagePreview").src = "";
+      document.getElementById("imagePreviewBox").classList.add("hidden");
+      document.getElementById("imageStatus").classList.add("hidden");
+      document.getElementById("confirmImageButton").classList.remove("hidden");
+    }
+
+    function submitAnother() {
+      showView("form");
+    }
+
+    function showError(message) {
+      document.getElementById("errorMessage").textContent = message;
+      showView("error");
+    }
+  </script>
 </body>
 </html>
