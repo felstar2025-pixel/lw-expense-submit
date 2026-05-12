@@ -93,9 +93,10 @@
             required
             class="w-full bg-slate-50 border border-slate-200 px-3 py-3 rounded-xl font-bold text-sm text-slate-800 focus:ring-2 focus:ring-lime-400 outline-none"
           >
-            <option value="立替">立替</option>
-            <option value="会社支払い">会社支払い</option>
-            <option value="不明">不明</option>
+            <option value="立替|未返金">立替（未返金）</option>
+            <option value="立替|返金済み">立替（返金済み）</option>
+            <option value="会社支払い|対象外">会社支払い</option>
+            <option value="不明|要確認">不明</option>
           </select>
         </div>
 
@@ -154,11 +155,17 @@
 
             <div>
               <label class="block text-xs font-bold text-slate-500 mb-1">支払日</label>
-              <input
-                type="date"
-                id="paymentDate"
-                class="w-full bg-slate-50 border border-slate-200 px-3 py-3 rounded-xl font-bold text-sm text-slate-800 focus:ring-2 focus:ring-lime-400 outline-none"
-              />
+              <div class="relative">
+                <input
+                  type="date"
+                  id="paymentDate"
+                  class="w-full bg-slate-50 border border-slate-200 px-3 py-3 rounded-xl font-bold text-sm text-slate-800 focus:ring-2 focus:ring-lime-400 outline-none"
+                />
+                <span
+                  id="paymentDateHint"
+                  class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400"
+                >年月日</span>
+              </div>
             </div>
 
             <div>
@@ -451,11 +458,20 @@
       }
 
       if (savedPaymentMethod) {
-        document.getElementById("paymentMethod").value = savedPaymentMethod;
+        const paymentMethodInput = document.getElementById("paymentMethod");
+        paymentMethodInput.value = savedPaymentMethod;
+
+        // 旧保存値（立替 / 会社支払い / 不明）が残っている端末でも表示できるように補正
+        if (!paymentMethodInput.value) {
+          if (savedPaymentMethod === "立替") paymentMethodInput.value = "立替|未返金";
+          if (savedPaymentMethod === "会社支払い") paymentMethodInput.value = "会社支払い|対象外";
+          if (savedPaymentMethod === "不明") paymentMethodInput.value = "不明|要確認";
+        }
       }
 
       restoreDraftInputs();
       setupDraftAutoSave();
+      setupPaymentDateHint();
     });
 
     /***** 入力途中の自動保存 *****/
@@ -491,6 +507,47 @@
       DRAFT_KEYS.forEach(id => {
         localStorage.removeItem("expense_draft_" + id);
       });
+    }
+
+    function setupPaymentDateHint() {
+      const paymentDate = document.getElementById("paymentDate");
+      if (!paymentDate) return;
+
+      paymentDate.addEventListener("input", updatePaymentDateHint);
+      paymentDate.addEventListener("change", updatePaymentDateHint);
+      updatePaymentDateHint();
+    }
+
+    function updatePaymentDateHint() {
+      const paymentDate = document.getElementById("paymentDate");
+      const hint = document.getElementById("paymentDateHint");
+      if (!paymentDate || !hint) return;
+
+      if (paymentDate.value) {
+        hint.classList.add("hidden");
+      } else {
+        hint.classList.remove("hidden");
+      }
+    }
+
+    function normalizePaymentSelection(value) {
+      if (value && value.includes("|")) {
+        const parts = value.split("|");
+        return {
+          paymentMethod: parts[0] || "不明",
+          refundStatus: parts[1] || "要確認"
+        };
+      }
+
+      if (value === "立替") {
+        return { paymentMethod: "立替", refundStatus: "未返金" };
+      }
+
+      if (value === "会社支払い") {
+        return { paymentMethod: "会社支払い", refundStatus: "対象外" };
+      }
+
+      return { paymentMethod: "不明", refundStatus: "要確認" };
     }
 
     /***** 画面切り替え *****/
@@ -746,7 +803,10 @@
       event.preventDefault();
 
       const payer = document.getElementById("payer").value.trim();
-      const paymentMethod = document.getElementById("paymentMethod").value;
+      const paymentMethodValue = document.getElementById("paymentMethod").value;
+      const paymentInfo = normalizePaymentSelection(paymentMethodValue);
+      const paymentMethod = paymentInfo.paymentMethod;
+      const refundStatus = paymentInfo.refundStatus;
       const expenseType = document.getElementById("expenseType").value;
       const content = document.getElementById("content").value.trim();
       const files = getSelectedFiles();
@@ -767,11 +827,12 @@
       }
 
       localStorage.setItem("expense_payer", payer);
-      localStorage.setItem("expense_paymentMethod", paymentMethod);
+      localStorage.setItem("expense_paymentMethod", paymentMethodValue);
 
       const payload = {
         payer,
         paymentMethod,
+        refundStatus,
         expenseType,
         content,
         purchasePlace: document.getElementById("purchasePlace").value.trim(),
@@ -823,6 +884,7 @@
 
       clearAllFileState();
       clearDraftInputs();
+      updatePaymentDateHint();
     }
 
     function resetForm() {
@@ -838,11 +900,20 @@
       }
 
       if (savedPaymentMethod) {
-        document.getElementById("paymentMethod").value = savedPaymentMethod;
+        const paymentMethodInput = document.getElementById("paymentMethod");
+        paymentMethodInput.value = savedPaymentMethod;
+
+        // 旧保存値（立替 / 会社支払い / 不明）が残っている端末でも表示できるように補正
+        if (!paymentMethodInput.value) {
+          if (savedPaymentMethod === "立替") paymentMethodInput.value = "立替|未返金";
+          if (savedPaymentMethod === "会社支払い") paymentMethodInput.value = "会社支払い|対象外";
+          if (savedPaymentMethod === "不明") paymentMethodInput.value = "不明|要確認";
+        }
       }
 
       clearAllFileState();
       clearDraftInputs();
+      updatePaymentDateHint();
     }
 
     function clearAllFileState() {
