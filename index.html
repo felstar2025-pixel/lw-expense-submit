@@ -62,7 +62,7 @@
         <h2 class="font-extrabold text-lg text-slate-800 mb-1">経費提出</h2>
         <p class="text-xs text-slate-400 font-bold leading-relaxed">
           必須項目とレシート/領収書を撮影して送信してください。<br>
-          1会計につき・1送信でお願いします。
+          1会計につき1送信でお願いします。
         </p>
       </div>
 
@@ -184,72 +184,173 @@
           </div>
         </div>
 
-        <!-- レシート写真 -->
+        <!-- レシート写真 / PDF -->
         <div class="border-t border-slate-100 pt-3">
-          <label class="block text-xs font-bold text-slate-500 mb-2">
+          <label class="block text-xs font-bold text-slate-500 mb-1">
             レシート写真 <span class="text-red-500">*</span>
           </label>
 
           <p class="text-[10px] text-slate-400 font-bold mb-2 leading-relaxed">
-            選択した画像のみ送信されます。写真フォルダ全体にはアクセスしません。
+            選択した画像/PDFのみ送信されます。写真フォルダ全体にはアクセスしません。
           </p>
 
-          <input
-            type="file"
-            id="cameraImage"
-            accept="image/*"
-            capture="environment"
-            class="hidden"
-            onchange="handleImageSelected(event)"
-          />
+          <!-- 1枚目：必須 -->
+          <section class="bg-slate-50 border border-slate-200 rounded-2xl p-3">
+            <div class="flex justify-between items-center mb-2">
+              <p class="text-xs font-black text-slate-600">1枚目 <span class="text-red-500">*</span></p>
+              <p id="fileStatus1" class="text-[10px] font-bold text-slate-400">未選択</p>
+            </div>
 
-          <input
-            type="file"
-            id="galleryImage"
-            accept="image/*"
-            class="hidden"
-            onchange="handleImageSelected(event)"
-          />
+            <input
+              type="file"
+              id="cameraImage1"
+              accept="image/*"
+              capture="environment"
+              class="hidden"
+              onchange="handleImageSelected(event, 0)"
+            />
 
-          <div class="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onclick="document.getElementById('cameraImage').click()"
-              class="bg-slate-900 text-white py-3.5 rounded-2xl font-bold text-sm shadow-md active:scale-[0.99] transition-transform"
-            >
-              📷 撮影する
-            </button>
+            <input
+              type="file"
+              id="galleryImage1"
+              accept="image/*"
+              class="hidden"
+              onchange="handleImageSelected(event, 0)"
+            />
 
-            <button
-              type="button"
-              onclick="document.getElementById('galleryImage').click()"
-              class="bg-white border border-slate-300 text-slate-700 py-3.5 rounded-2xl font-bold text-sm shadow-sm active:scale-[0.99] transition-transform"
-            >
-              🖼 写真から選ぶ
-            </button>
-          </div>
-
-          <div id="imagePreviewBox" class="hidden mt-3 bg-slate-50 border border-slate-200 rounded-2xl p-3">
-            <img id="imagePreview" src="" class="w-full rounded-xl border border-slate-200 shadow-sm" />
-            <div class="flex gap-2 mt-3">
+            <div class="grid grid-cols-2 gap-2">
               <button
                 type="button"
-                onclick="document.getElementById('cameraImage').click()"
-                class="flex-1 bg-white border border-slate-200 text-slate-600 py-3 rounded-xl font-bold text-sm"
+                onclick="document.getElementById('cameraImage1').click()"
+                class="bg-slate-900 text-white py-3.5 rounded-2xl font-bold text-sm shadow-md active:scale-[0.99] transition-transform"
               >
-                撮り直す
+                📷 撮影する
               </button>
+
               <button
                 type="button"
-                onclick="confirmImage()"
-                id="confirmImageButton"
-                class="flex-1 bg-lime-400 text-slate-900 py-3 rounded-xl font-bold text-sm"
+                onclick="document.getElementById('galleryImage1').click()"
+                class="bg-white border border-slate-300 text-slate-700 py-3.5 rounded-2xl font-bold text-sm shadow-sm active:scale-[0.99] transition-transform"
               >
-                この写真でOK
+                🖼 写真から選ぶ
               </button>
             </div>
-            <p id="imageStatus" class="hidden text-center text-xs font-bold text-lime-700 mt-3">
-              写真を確認しました
+
+            <div id="imagePreviewBox1" class="hidden mt-3">
+              <img id="imagePreview1" src="" class="w-full rounded-xl border border-slate-200 shadow-sm" />
+            </div>
+          </section>
+
+          <!-- 2枚目：任意 -->
+          <button
+            type="button"
+            id="showSecondReceiptButton"
+            onclick="showSecondReceipt()"
+            class="w-full mt-2 bg-white border border-dashed border-slate-300 text-slate-500 py-3 rounded-2xl font-bold text-sm active:scale-[0.99] transition-transform"
+          >
+            ＋ 2枚目を追加
+          </button>
+
+          <section id="secondReceiptSection" class="hidden mt-2 bg-slate-50 border border-slate-200 rounded-2xl p-3">
+            <div class="flex justify-between items-center mb-2">
+              <p class="text-xs font-black text-slate-600">2枚目 <span class="text-slate-400">任意</span></p>
+              <button type="button" onclick="removeSecondReceipt()" class="text-[10px] font-bold text-slate-400 underline">
+                取り消す
+              </button>
+            </div>
+
+            <input
+              type="file"
+              id="cameraImage2"
+              accept="image/*"
+              capture="environment"
+              class="hidden"
+              onchange="handleImageSelected(event, 1)"
+            />
+
+            <input
+              type="file"
+              id="galleryImage2"
+              accept="image/*"
+              class="hidden"
+              onchange="handleImageSelected(event, 1)"
+            />
+
+            <div class="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onclick="document.getElementById('cameraImage2').click()"
+                class="bg-slate-900 text-white py-3.5 rounded-2xl font-bold text-sm shadow-md active:scale-[0.99] transition-transform"
+              >
+                📷 撮影する
+              </button>
+
+              <button
+                type="button"
+                onclick="document.getElementById('galleryImage2').click()"
+                class="bg-white border border-slate-300 text-slate-700 py-3.5 rounded-2xl font-bold text-sm shadow-sm active:scale-[0.99] transition-transform"
+              >
+                🖼 写真から選ぶ
+              </button>
+            </div>
+
+            <div id="imagePreviewBox2" class="hidden mt-3">
+              <img id="imagePreview2" src="" class="w-full rounded-xl border border-slate-200 shadow-sm" />
+            </div>
+          </section>
+
+          <!-- PDF：サブメニュー -->
+          <div class="mt-3 border-t border-slate-200 pt-3">
+            <button
+              type="button"
+              onclick="togglePdfSection()"
+              class="w-full text-left text-[11px] font-black text-slate-400 tracking-widest"
+            >
+              PDFで提出する場合はこちら
+            </button>
+
+            <section id="pdfSection" class="hidden mt-2 bg-white border border-slate-200 rounded-2xl p-3">
+              <p class="text-[10px] text-slate-400 font-bold mb-2 leading-relaxed">
+                PDFを選ぶ場合、写真は送信されません。画像とPDFの同時添付はできません。
+              </p>
+
+              <input
+                type="file"
+                id="pdfFile"
+                accept="application/pdf"
+                class="hidden"
+                onchange="handlePdfSelected(event)"
+              />
+
+              <button
+                type="button"
+                onclick="document.getElementById('pdfFile').click()"
+                class="w-full bg-slate-100 border border-slate-200 text-slate-700 py-3.5 rounded-2xl font-bold text-sm active:scale-[0.99] transition-transform"
+              >
+                📄 PDFを選ぶ
+              </button>
+
+              <div id="pdfPreviewBox" class="hidden mt-3 bg-slate-50 border border-slate-200 rounded-xl p-3">
+                <p class="text-xs font-bold text-slate-700">選択中のPDF</p>
+                <p id="pdfFileName" class="text-xs text-slate-500 font-bold break-all mt-1"></p>
+                <button type="button" onclick="removePdfFile()" class="mt-3 text-[11px] text-slate-400 font-bold underline">
+                  PDFを取り消す
+                </button>
+              </div>
+            </section>
+          </div>
+
+          <div id="fileConfirmBox" class="hidden mt-3 bg-slate-50 border border-slate-200 rounded-2xl p-3">
+            <button
+              type="button"
+              onclick="confirmFiles()"
+              id="confirmFileButton"
+              class="w-full bg-lime-400 text-slate-900 py-3 rounded-xl font-bold text-sm"
+            >
+              この内容でOK
+            </button>
+            <p id="fileStatus" class="hidden text-center text-xs font-bold text-lime-700 mt-3">
+              添付ファイルを確認しました
             </p>
           </div>
         </div>
@@ -270,7 +371,7 @@
   <main id="view_loading" class="hidden min-h-screen flex-col items-center justify-center bg-white px-6 text-center">
     <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-900 mb-4"></div>
     <p class="font-bold text-slate-800 text-lg">送信中...</p>
-    <p class="text-xs text-slate-400 font-bold mt-2">写真を保存しています</p>
+    <p class="text-xs text-slate-400 font-bold mt-2">証憑ファイルを保存しています</p>
   </main>
 
   <!-- 完了 -->
@@ -278,7 +379,7 @@
     <div class="text-7xl mb-6 animate-bounce">✅</div>
     <h2 class="text-3xl font-extrabold text-slate-800 mb-2">提出完了</h2>
     <p class="text-sm text-slate-500 font-bold leading-relaxed mb-8">
-      経費情報とレシート写真を送信しました。
+      経費情報とレシート/領収書を送信しました。
     </p>
     <button onclick="submitAnother()" class="w-full max-w-xs bg-slate-900 text-white py-4 rounded-2xl font-bold text-lg shadow-lg">
       続けて提出する
@@ -303,10 +404,6 @@
 
     const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzK9E5kd5VsGC2nq_hG9fFZgwD43tbRyXHLmchtH_WWuggrfYBGiE1b-a83Lf-_tcnx/exec";
 
-    let selectedImageBase64 = "";
-    let selectedMimeType = "image/jpeg";
-    let imageConfirmed = false;
-
     const DRAFT_KEYS = [
       "payer",
       "paymentMethod",
@@ -317,6 +414,9 @@
       "amount",
       "memo"
     ];
+
+    let selectedFiles = [];
+    let filesConfirmed = false;
 
     /***** ロック画面 *****/
     window.checkAutoPasscode = (val) => {
@@ -346,52 +446,52 @@
       const savedPayer = localStorage.getItem("expense_payer");
       const savedPaymentMethod = localStorage.getItem("expense_paymentMethod");
 
-    if (savedPayer) {
-      document.getElementById("payer").value = savedPayer;
-    }
+      if (savedPayer) {
+        document.getElementById("payer").value = savedPayer;
+      }
 
-    if (savedPaymentMethod) {
-    document.getElementById("paymentMethod").value = savedPaymentMethod;
-    }
+      if (savedPaymentMethod) {
+        document.getElementById("paymentMethod").value = savedPaymentMethod;
+      }
 
       restoreDraftInputs();
       setupDraftAutoSave();
-  });
+    });
 
     /***** 入力途中の自動保存 *****/
-function setupDraftAutoSave() {
-  DRAFT_KEYS.forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
+    function setupDraftAutoSave() {
+      DRAFT_KEYS.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
 
-    el.addEventListener("input", () => {
-      localStorage.setItem("expense_draft_" + id, el.value);
-    });
+        el.addEventListener("input", () => {
+          localStorage.setItem("expense_draft_" + id, el.value);
+        });
 
-    el.addEventListener("change", () => {
-      localStorage.setItem("expense_draft_" + id, el.value);
-    });
-  });
-}
-
-function restoreDraftInputs() {
-  DRAFT_KEYS.forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
-
-    const savedValue = localStorage.getItem("expense_draft_" + id);
-
-    if (savedValue !== null) {
-      el.value = savedValue;
+        el.addEventListener("change", () => {
+          localStorage.setItem("expense_draft_" + id, el.value);
+        });
+      });
     }
-  });
-}
 
-function clearDraftInputs() {
-  DRAFT_KEYS.forEach(id => {
-    localStorage.removeItem("expense_draft_" + id);
-  });
-}  
+    function restoreDraftInputs() {
+      DRAFT_KEYS.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+
+        const savedValue = localStorage.getItem("expense_draft_" + id);
+
+        if (savedValue !== null) {
+          el.value = savedValue;
+        }
+      });
+    }
+
+    function clearDraftInputs() {
+      DRAFT_KEYS.forEach(id => {
+        localStorage.removeItem("expense_draft_" + id);
+      });
+    }
 
     /***** 画面切り替え *****/
     function showView(name) {
@@ -414,49 +514,182 @@ function clearDraftInputs() {
       window.scrollTo(0, 0);
     }
 
-    /***** 写真選択 *****/
-    async function handleImageSelected(event) {
+    /***** 添付ファイル選択 *****/
+    async function handleImageSelected(event, index) {
       const file = event.target.files[0];
-
       if (!file) return;
 
       if (!file.type.startsWith("image/")) {
         showError("画像ファイルを選択してください。");
+        event.target.value = "";
         return;
       }
 
-      imageConfirmed = false;
-      selectedMimeType = "image/jpeg";
+      clearPdfState(false);
+      filesConfirmed = false;
 
       try {
-        selectedImageBase64 = await resizeImageToBase64(file, 1600, 0.78);
+        const base64 = await resizeImageToBase64(file, 1600, 0.78);
+        selectedFiles[index] = {
+          base64,
+          mimeType: "image/jpeg",
+          fileRole: index === 0 ? "receipt_image_1" : "receipt_image_2",
+          originalName: file.name || "receipt.jpg"
+        };
       } catch (err) {
-        selectedImageBase64 = await fileToBase64(file);
-        selectedMimeType = file.type || "image/jpeg";
+        const base64 = await fileToBase64(file);
+        selectedFiles[index] = {
+          base64,
+          mimeType: file.type || "image/jpeg",
+          fileRole: index === 0 ? "receipt_image_1" : "receipt_image_2",
+          originalName: file.name || "receipt.jpg"
+        };
       }
 
-      document.getElementById("imagePreview").src = selectedImageBase64;
-      document.getElementById("imagePreviewBox").classList.remove("hidden");
-      document.getElementById("imageStatus").classList.add("hidden");
-      document.getElementById("confirmImageButton").classList.remove("hidden");
+      const preview = document.getElementById(index === 0 ? "imagePreview1" : "imagePreview2");
+      const previewBox = document.getElementById(index === 0 ? "imagePreviewBox1" : "imagePreviewBox2");
+      const status = document.getElementById(index === 0 ? "fileStatus1" : null);
+
+      preview.src = selectedFiles[index].base64;
+      previewBox.classList.remove("hidden");
+
+      if (status) {
+        status.textContent = "選択済み";
+        status.classList.remove("text-slate-400");
+        status.classList.add("text-lime-700");
+      }
 
       event.target.value = "";
+      updateFileConfirmBox();
     }
 
-    function confirmImage() {
-      if (!selectedImageBase64) {
-        showError("先にレシート写真を撮影してください。");
+    async function handlePdfSelected(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+
+      if (!isPdf) {
+        showError("PDFファイルを選択してください。");
+        event.target.value = "";
         return;
       }
 
-      imageConfirmed = true;
-      document.getElementById("imageStatus").classList.remove("hidden");
-      document.getElementById("confirmImageButton").classList.add("hidden");
+      clearImageState(false);
+      filesConfirmed = false;
 
-      const box = document.getElementById("imagePreviewBox");
+      const base64 = await fileToBase64(file);
+      selectedFiles = [{
+        base64,
+        mimeType: "application/pdf",
+        fileRole: "receipt_pdf",
+        originalName: file.name || "receipt.pdf"
+      }];
+
+      document.getElementById("pdfFileName").textContent = file.name || "receipt.pdf";
+      document.getElementById("pdfPreviewBox").classList.remove("hidden");
+      event.target.value = "";
+      updateFileConfirmBox();
+    }
+
+    function showSecondReceipt() {
+      document.getElementById("secondReceiptSection").classList.remove("hidden");
+      document.getElementById("showSecondReceiptButton").classList.add("hidden");
+    }
+
+    function removeSecondReceipt() {
+      selectedFiles[1] = null;
+      document.getElementById("cameraImage2").value = "";
+      document.getElementById("galleryImage2").value = "";
+      document.getElementById("imagePreview2").src = "";
+      document.getElementById("imagePreviewBox2").classList.add("hidden");
+      document.getElementById("secondReceiptSection").classList.add("hidden");
+      document.getElementById("showSecondReceiptButton").classList.remove("hidden");
+      filesConfirmed = false;
+      updateFileConfirmBox();
+    }
+
+    function togglePdfSection() {
+      document.getElementById("pdfSection").classList.toggle("hidden");
+    }
+
+    function removePdfFile() {
+      clearPdfState(true);
+      filesConfirmed = false;
+      updateFileConfirmBox();
+    }
+
+    function clearImageState(resetInputs) {
+      selectedFiles = [];
+
+      ["cameraImage1", "galleryImage1", "cameraImage2", "galleryImage2"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el && resetInputs) el.value = "";
+      });
+
+      document.getElementById("imagePreview1").src = "";
+      document.getElementById("imagePreview2").src = "";
+      document.getElementById("imagePreviewBox1").classList.add("hidden");
+      document.getElementById("imagePreviewBox2").classList.add("hidden");
+      document.getElementById("secondReceiptSection").classList.add("hidden");
+      document.getElementById("showSecondReceiptButton").classList.remove("hidden");
+
+      const status1 = document.getElementById("fileStatus1");
+      status1.textContent = "未選択";
+      status1.classList.remove("text-lime-700");
+      status1.classList.add("text-slate-400");
+    }
+
+    function clearPdfState(resetInputs) {
+      if (selectedFiles.some(file => file && file.mimeType === "application/pdf")) {
+        selectedFiles = [];
+      }
+
+      const pdfInput = document.getElementById("pdfFile");
+      if (pdfInput && resetInputs) pdfInput.value = "";
+
+      document.getElementById("pdfFileName").textContent = "";
+      document.getElementById("pdfPreviewBox").classList.add("hidden");
+    }
+
+    function updateFileConfirmBox() {
+      const files = getSelectedFiles();
+      const box = document.getElementById("fileConfirmBox");
+      const status = document.getElementById("fileStatus");
+      const button = document.getElementById("confirmFileButton");
+
+      if (files.length === 0) {
+        box.classList.add("hidden");
+        status.classList.add("hidden");
+        button.classList.remove("hidden");
+        return;
+      }
+
+      box.classList.remove("hidden");
+      status.classList.add("hidden");
+      button.classList.remove("hidden");
+    }
+
+    function confirmFiles() {
+      const files = getSelectedFiles();
+
+      if (files.length === 0) {
+        showError("レシート写真またはPDFを選択してください。");
+        return;
+      }
+
+      filesConfirmed = true;
+      document.getElementById("fileStatus").classList.remove("hidden");
+      document.getElementById("confirmFileButton").classList.add("hidden");
+
+      const box = document.getElementById("fileConfirmBox");
       box.classList.remove("animate-pop");
       void box.offsetWidth;
       box.classList.add("animate-pop");
+    }
+
+    function getSelectedFiles() {
+      return selectedFiles.filter(Boolean);
     }
 
     function fileToBase64(file) {
@@ -496,7 +729,6 @@ function clearDraftInputs() {
             const ctx = canvas.getContext("2d");
             ctx.drawImage(img, 0, 0, width, height);
 
-            selectedMimeType = "image/jpeg";
             resolve(canvas.toDataURL("image/jpeg", quality));
           };
 
@@ -517,19 +749,20 @@ function clearDraftInputs() {
       const paymentMethod = document.getElementById("paymentMethod").value;
       const expenseType = document.getElementById("expenseType").value;
       const content = document.getElementById("content").value.trim();
+      const files = getSelectedFiles();
 
       if (!payer || !paymentMethod || !expenseType || !content) {
         showError("必須項目を入力してください。");
         return;
       }
 
-      if (!selectedImageBase64) {
-        showError("レシート写真を撮影または選択してください。");
+      if (files.length === 0) {
+        showError("レシート写真またはPDFを選択してください。");
         return;
       }
 
-      if (!imageConfirmed) {
-        showError("選択した写真を確認して「この写真でOK」を押してください。");
+      if (!filesConfirmed) {
+        showError("添付ファイルを確認して「この内容でOK」を押してください。");
         return;
       }
 
@@ -537,16 +770,26 @@ function clearDraftInputs() {
       localStorage.setItem("expense_paymentMethod", paymentMethod);
 
       const payload = {
-        payer: payer,
-        paymentMethod: paymentMethod,
-        expenseType: expenseType,
-        content: content,
+        payer,
+        paymentMethod,
+        expenseType,
+        content,
         purchasePlace: document.getElementById("purchasePlace").value.trim(),
         paymentDate: document.getElementById("paymentDate").value,
         amount: document.getElementById("amount").value,
         memo: document.getElementById("memo").value.trim(),
-        imageBase64: selectedImageBase64,
-        mimeType: selectedMimeType
+
+        // 新形式：GAS側で複数ファイルを保存するために使う
+        files: files.map(file => ({
+          base64: file.base64,
+          mimeType: file.mimeType,
+          fileRole: file.fileRole,
+          originalName: file.originalName
+        })),
+
+        // 旧形式：GASを更新する前でも1ファイル目だけは従来通り処理できるように残す
+        imageBase64: files[0].base64,
+        mimeType: files[0].mimeType
       };
 
       showView("loading");
@@ -577,18 +820,8 @@ function clearDraftInputs() {
       document.getElementById("paymentDate").value = "";
       document.getElementById("amount").value = "";
       document.getElementById("memo").value = "";
-      document.getElementById("cameraImage").value = "";
-      document.getElementById("galleryImage").value = "";
 
-      selectedImageBase64 = "";
-      selectedMimeType = "image/jpeg";
-      imageConfirmed = false;
-
-      document.getElementById("imagePreview").src = "";
-      document.getElementById("imagePreviewBox").classList.add("hidden");
-      document.getElementById("imageStatus").classList.add("hidden");
-      document.getElementById("confirmImageButton").classList.remove("hidden");
-
+      clearAllFileState();
       clearDraftInputs();
     }
 
@@ -608,19 +841,44 @@ function clearDraftInputs() {
         document.getElementById("paymentMethod").value = savedPaymentMethod;
       }
 
-      selectedImageBase64 = "";
-      selectedMimeType = "image/jpeg";
-      imageConfirmed = false;
-
-      document.getElementById("cameraImage").value = "";
-      document.getElementById("galleryImage").value = "";
-      document.getElementById("imagePreview").src = "";
-      document.getElementById("imagePreviewBox").classList.add("hidden");
-      document.getElementById("imageStatus").classList.add("hidden");
-      document.getElementById("confirmImageButton").classList.remove("hidden");
-
+      clearAllFileState();
       clearDraftInputs();
+    }
 
+    function clearAllFileState() {
+      selectedFiles = [];
+      filesConfirmed = false;
+
+      [
+        "cameraImage1",
+        "galleryImage1",
+        "cameraImage2",
+        "galleryImage2",
+        "pdfFile"
+      ].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = "";
+      });
+
+      document.getElementById("imagePreview1").src = "";
+      document.getElementById("imagePreview2").src = "";
+      document.getElementById("imagePreviewBox1").classList.add("hidden");
+      document.getElementById("imagePreviewBox2").classList.add("hidden");
+      document.getElementById("secondReceiptSection").classList.add("hidden");
+      document.getElementById("showSecondReceiptButton").classList.remove("hidden");
+
+      const status1 = document.getElementById("fileStatus1");
+      status1.textContent = "未選択";
+      status1.classList.remove("text-lime-700");
+      status1.classList.add("text-slate-400");
+
+      document.getElementById("pdfFileName").textContent = "";
+      document.getElementById("pdfPreviewBox").classList.add("hidden");
+      document.getElementById("pdfSection").classList.add("hidden");
+
+      document.getElementById("fileConfirmBox").classList.add("hidden");
+      document.getElementById("fileStatus").classList.add("hidden");
+      document.getElementById("confirmFileButton").classList.remove("hidden");
     }
 
     function submitAnother() {
