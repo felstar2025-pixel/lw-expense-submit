@@ -8,6 +8,8 @@
   <style>
     body::-webkit-scrollbar { display: none; }
     body { -ms-overflow-style: none; scrollbar-width: none; overscroll-behavior-y: none; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     @keyframes pop {
       0% { transform: scale(1); }
       50% { transform: scale(1.03); }
@@ -43,368 +45,62 @@
 
   <!-- ヘッダー -->
   <header class="sticky top-0 z-30 bg-white/90 backdrop-blur-md px-3 py-1.5 border-b border-slate-200 shadow-sm">
-    <div class="max-w-md mx-auto flex justify-between items-center">
+    <div class="max-w-7xl mx-auto flex justify-between items-center">
       <div>
         <h1 class="text-xl font-serif tracking-widest text-slate-800 leading-tight">phantom line</h1>
         <p class="text-[10px] font-bold tracking-[0.25em] text-slate-400 leading-tight">EXPENSE SUBMIT</p>
       </div>
-      <button onclick="resetForm()" class="text-[10px] font-bold text-slate-500 bg-slate-100 px-2.5 py-1.5 rounded-lg">
-        リセット
+      <button onclick="resetAllCards()" class="text-[10px] font-bold text-slate-500 bg-slate-100 px-2.5 py-1.5 rounded-lg">
+        全リセット
       </button>
     </div>
   </header>
 
   <!-- メイン -->
   <main id="view_form" class="min-h-screen bg-slate-50 pb-8">
-    <div class="max-w-md mx-auto p-3">
+    <div class="max-w-7xl mx-auto p-3">
 
       <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-4 mb-3">
         <h2 class="font-extrabold text-lg text-slate-800 mb-1">経費提出</h2>
         <p class="text-xs text-slate-400 font-bold leading-relaxed">
-          必須項目とレシート/領収書を撮影して送信してください。<br>
-          1会計につき1送信でお願いします。
+          1カードにつき1経費です。スマホでは横スワイプ、PCでは3件を並べて入力できます。<br>
+          送信中も他のカードは入力できます。
         </p>
       </div>
 
-      <form id="expenseForm" onsubmit="submitExpense(event)" class="bg-white rounded-3xl shadow-sm border border-slate-200 p-4 flex flex-col gap-3">
 
-        <!-- 支払者 -->
-        <div>
-          <label class="block text-xs font-bold text-slate-500 mb-1">
-            支払者 <span class="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            id="payer"
-            required
-            placeholder="名前を入力"
-            class="w-full bg-slate-50 border border-slate-200 px-3 py-3 rounded-xl font-bold text-sm text-slate-800 focus:ring-2 focus:ring-lime-400 outline-none"
-          />
-          <p class="text-[10px] text-slate-400 font-bold mt-1">一度入力すると、この端末に保存されます。</p>
-        </div>
-
-        <!-- 支払方法 -->
-        <div>
-          <label class="block text-xs font-bold text-slate-500 mb-1">
-            支払方法 <span class="text-red-500">*</span>
-          </label>
-          <select
-            id="paymentMethod"
-            required
-            class="w-full bg-slate-50 border border-slate-200 px-3 py-3 rounded-xl font-bold text-sm text-slate-800 focus:ring-2 focus:ring-lime-400 outline-none"
-          >
-            <option value="立替|未返金">立替（未返金）</option>
-            <option value="立替|返金済み">立替（返金済み）</option>
-            <option value="支払者名義立替|未返金">支払者名義立替（未返金）</option>
-            <option value="支払者名義立替|返金済み">支払者名義立替（返金済み）</option>
-            <option value="LW資金支払い|対象外">LW資金支払い（LWのお金で支払ったもの・書類のみ提出）</option>
-            <option value="その他|要確認">その他・要確認</option>
-          </select>
-        </div>
-
-        <!-- 経費の種類 -->
-        <div>
-          <label class="block text-xs font-bold text-slate-500 mb-1">
-            経費の種類 <span class="text-red-500">*</span>
-          </label>
-          <select
-            id="expenseType"
-            required
-            class="w-full bg-slate-50 border border-slate-200 px-3 py-3 rounded-xl font-bold text-sm text-slate-800 focus:ring-2 focus:ring-lime-400 outline-none"
-          >
-            <option value="">選択してください</option>
-            <option value="備品">備品</option>
-            <option value="消耗品">消耗品</option>
-            <option value="交通費">交通費</option>
-            <option value="撮影関連">撮影関連</option>
-            <option value="イベント関連">イベント関連</option>
-            <option value="通信・アプリ">通信・アプリ</option>
-            <option value="飲食">飲食</option>
-            <option value="梱包・発送">梱包・発送</option>
-            <option value="その他">その他</option>
-            <option value="不明">不明</option>
-          </select>
-        </div>
-
-        <!-- 内容 -->
-        <div>
-          <label class="block text-xs font-bold text-slate-500 mb-1">
-            内容 <span class="text-red-500">*</span>
-          </label>
-          <textarea
-            id="content"
-            rows="2"
-            required
-            placeholder="何のために買ったか。例：撮影用小物、梱包テープなど"
-            class="w-full bg-slate-50 border border-slate-200 px-3 py-3 rounded-xl font-bold text-sm text-slate-800 focus:ring-2 focus:ring-lime-400 outline-none"
-          ></textarea>
-        </div>
-
-        <!-- 任意項目 -->
-        <div class="border-t border-slate-100 pt-3">
-          <p class="text-[10px] font-black text-slate-400 tracking-widest mb-2">OPTIONAL</p>
-
-          <div class="flex flex-col gap-3">
-            <div>
-              <label class="block text-xs font-bold text-slate-500 mb-1">購入先</label>
-              <input
-                type="text"
-                id="purchasePlace"
-                placeholder="ローソン、Amazon、ダイソーなど"
-                class="w-full bg-slate-50 border border-slate-200 px-3 py-3 rounded-xl font-bold text-sm text-slate-800 focus:ring-2 focus:ring-lime-400 outline-none"
-              />
-            </div>
-
-            <div>
-              <label class="block text-xs font-bold text-slate-500 mb-1">支払日</label>
-              <div class="relative">
-                <input
-                  type="date"
-                  id="paymentDate"
-                  class="w-full bg-slate-50 border border-slate-200 px-3 py-3 rounded-xl font-bold text-sm text-slate-800 focus:ring-2 focus:ring-lime-400 outline-none"
-                />
-                <span
-                  id="paymentDateHint"
-                  class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400"
-                >年月日</span>
-              </div>
-            </div>
-
-            <div>
-              <label class="block text-xs font-bold text-slate-500 mb-1">支払金額</label>
-              <input
-                type="number"
-                id="amount"
-                inputmode="numeric"
-                placeholder="入力"
-                class="w-full bg-slate-50 border border-slate-200 px-3 py-3 rounded-xl font-bold text-sm text-slate-800 focus:ring-2 focus:ring-lime-400 outline-none"
-              />
-            </div>
-
-            <div>
-              <label class="block text-xs font-bold text-slate-500 mb-1">メモ</label>
-              <textarea
-                id="memo"
-                rows="2"
-                placeholder="補足があれば入力"
-                class="w-full bg-slate-50 border border-slate-200 px-3 py-3 rounded-xl font-bold text-sm text-slate-800 focus:ring-2 focus:ring-lime-400 outline-none"
-              ></textarea>
-            </div>
-          </div>
-        </div>
-
-        <!-- レシート写真 / PDF -->
-        <div class="border-t border-slate-100 pt-3">
-          <label class="block text-xs font-bold text-slate-500 mb-1">
-            レシート写真 <span class="text-red-500">*</span>
-          </label>
-
-          <p class="text-[10px] text-slate-400 font-bold mb-2 leading-relaxed">
-            選択した画像/PDFのみ送信されます。写真フォルダ全体にはアクセスしません。
-          </p>
-
-          <!-- 1枚目：必須 -->
-          <section class="bg-slate-50 border border-slate-200 rounded-2xl p-3">
-            <div class="flex justify-between items-center mb-2">
-              <p class="text-xs font-black text-slate-600">1枚目 <span class="text-red-500">*</span></p>
-              <p id="fileStatus1" class="text-[10px] font-bold text-slate-400">未選択</p>
-            </div>
-
-            <input
-              type="file"
-              id="cameraImage1"
-              accept="image/*"
-              capture="environment"
-              class="hidden"
-              onchange="handleImageSelected(event, 0)"
-            />
-
-            <input
-              type="file"
-              id="galleryImage1"
-              accept="image/*"
-              class="hidden"
-              onchange="handleImageSelected(event, 0)"
-            />
-
-            <div class="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onclick="document.getElementById('cameraImage1').click()"
-                class="bg-slate-900 text-white py-3.5 rounded-2xl font-bold text-sm shadow-md active:scale-[0.99] transition-transform"
-              >
-                📷 撮影する
-              </button>
-
-              <button
-                type="button"
-                onclick="document.getElementById('galleryImage1').click()"
-                class="bg-white border border-slate-300 text-slate-700 py-3.5 rounded-2xl font-bold text-sm shadow-sm active:scale-[0.99] transition-transform"
-              >
-                🖼 写真から選ぶ
-              </button>
-            </div>
-
-            <div id="imagePreviewBox1" class="hidden mt-3">
-              <img id="imagePreview1" src="" class="w-full rounded-xl border border-slate-200 shadow-sm" />
-            </div>
-          </section>
-
-          <!-- 2枚目：任意 -->
-          <button
-            type="button"
-            id="showSecondReceiptButton"
-            onclick="showSecondReceipt()"
-            class="w-full mt-2 bg-white border border-dashed border-slate-300 text-slate-500 py-3 rounded-2xl font-bold text-sm active:scale-[0.99] transition-transform"
-          >
-            ＋ 2枚目を追加
-          </button>
-
-          <section id="secondReceiptSection" class="hidden mt-2 bg-slate-50 border border-slate-200 rounded-2xl p-3">
-            <div class="flex justify-between items-center mb-2">
-              <p class="text-xs font-black text-slate-600">2枚目 <span class="text-slate-400">任意</span></p>
-              <button type="button" onclick="removeSecondReceipt()" class="text-[10px] font-bold text-slate-400 underline">
-                取り消す
-              </button>
-            </div>
-
-            <input
-              type="file"
-              id="cameraImage2"
-              accept="image/*"
-              capture="environment"
-              class="hidden"
-              onchange="handleImageSelected(event, 1)"
-            />
-
-            <input
-              type="file"
-              id="galleryImage2"
-              accept="image/*"
-              class="hidden"
-              onchange="handleImageSelected(event, 1)"
-            />
-
-            <div class="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onclick="document.getElementById('cameraImage2').click()"
-                class="bg-slate-900 text-white py-3.5 rounded-2xl font-bold text-sm shadow-md active:scale-[0.99] transition-transform"
-              >
-                📷 撮影する
-              </button>
-
-              <button
-                type="button"
-                onclick="document.getElementById('galleryImage2').click()"
-                class="bg-white border border-slate-300 text-slate-700 py-3.5 rounded-2xl font-bold text-sm shadow-sm active:scale-[0.99] transition-transform"
-              >
-                🖼 写真から選ぶ
-              </button>
-            </div>
-
-            <div id="imagePreviewBox2" class="hidden mt-3">
-              <img id="imagePreview2" src="" class="w-full rounded-xl border border-slate-200 shadow-sm" />
-            </div>
-          </section>
-
-          <!-- PDF：サブメニュー -->
-          <div class="mt-3 border-t border-slate-200 pt-3">
-            <button
-              type="button"
-              onclick="togglePdfSection()"
-              class="w-full text-left text-[11px] font-black text-slate-400 tracking-widest"
-            >
-              PDFで提出する場合はこちら
-            </button>
-
-            <section id="pdfSection" class="hidden mt-2 bg-white border border-slate-200 rounded-2xl p-3">
-              <p class="text-[10px] text-slate-400 font-bold mb-2 leading-relaxed">
-                PDFを選ぶ場合、写真は送信されません。画像とPDFの同時添付はできません。
-              </p>
-
-              <input
-                type="file"
-                id="pdfFile"
-                accept="application/pdf"
-                class="hidden"
-                onchange="handlePdfSelected(event)"
-              />
-
-              <button
-                type="button"
-                onclick="document.getElementById('pdfFile').click()"
-                class="w-full bg-slate-100 border border-slate-200 text-slate-700 py-3.5 rounded-2xl font-bold text-sm active:scale-[0.99] transition-transform"
-              >
-                📄 PDFを選ぶ
-              </button>
-
-              <div id="pdfPreviewBox" class="hidden mt-3 bg-slate-50 border border-slate-200 rounded-xl p-3">
-                <p class="text-xs font-bold text-slate-700">選択中のPDF</p>
-                <p id="pdfFileName" class="text-xs text-slate-500 font-bold break-all mt-1"></p>
-                <button type="button" onclick="removePdfFile()" class="mt-3 text-[11px] text-slate-400 font-bold underline">
-                  PDFを取り消す
-                </button>
-              </div>
-            </section>
-          </div>
-
-          <div id="fileConfirmBox" class="hidden mt-3 bg-slate-50 border border-slate-200 rounded-2xl p-3">
-            <button
-              type="button"
-              onclick="confirmFiles()"
-              id="confirmFileButton"
-              class="w-full bg-lime-400 text-slate-900 py-3 rounded-xl font-bold text-sm"
-            >
-              この内容でOK
-            </button>
-            <p id="fileStatus" class="hidden text-center text-xs font-bold text-lime-700 mt-3">
-              添付ファイルを確認しました
-            </p>
-          </div>
-        </div>
-
-        <!-- 送信 -->
+      <!-- 送信履歴 -->
+      <section class="bg-white rounded-3xl shadow-sm border border-slate-200 p-3 mb-3">
         <button
-          type="submit"
-          id="submitButton"
-          class="w-full bg-lime-400 text-slate-900 py-4 rounded-2xl font-black text-base shadow-md mt-1 active:scale-[0.99] transition-transform"
+          type="button"
+          onclick="toggleSubmissionHistory()"
+          class="w-full flex items-center justify-between gap-3 text-left"
         >
-          送信する
+          <span>
+            <span class="block text-[10px] font-black text-slate-400 tracking-widest">TODAY LOG</span>
+            <span id="submissionHistorySummary" class="block text-sm font-extrabold text-slate-700">本日の送信履歴 0件</span>
+          </span>
+          <span id="submissionHistoryArrow" class="text-xs font-black text-slate-400">▼</span>
         </button>
-      </form>
+
+        <div id="submissionHistoryPanel" class="hidden mt-3 border-t border-slate-100 pt-3">
+          <div id="submissionHistoryList" class="max-h-64 overflow-y-auto no-scrollbar flex flex-col gap-2"></div>
+          <p class="mt-2 text-[10px] text-slate-400 font-bold leading-relaxed">
+            この履歴はこの端末内に当日分だけ保存されます。GAS通信の都合上、「送信処理完了」はスプレッドシート保存完了の確定通知ではありません。
+          </p>
+        </div>
+      </section>
+
+      <!-- スマホ：横スワイプ / PC：3列表示 -->
+      <div
+        id="expenseCards"
+        class="no-scrollbar flex gap-3 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-5 lg:grid lg:grid-cols-3 lg:overflow-visible"
+      ></div>
+
+      <div class="text-center text-[10px] font-bold text-slate-400 lg:hidden">
+        横にスワイプして 経費2 / 経費3 を入力できます
+      </div>
     </div>
-  </main>
-
-  <!-- 送信中 -->
-  <main id="view_loading" class="hidden min-h-screen flex-col items-center justify-center bg-white px-6 text-center">
-    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-900 mb-4"></div>
-    <p class="font-bold text-slate-800 text-lg">送信中...</p>
-    <p class="text-xs text-slate-400 font-bold mt-2">証憑ファイルを保存しています</p>
-  </main>
-
-  <!-- 完了 -->
-  <main id="view_success" class="hidden min-h-screen flex-col items-center justify-center bg-white px-6 text-center">
-    <div class="text-7xl mb-6 animate-bounce">✅</div>
-    <h2 class="text-3xl font-extrabold text-slate-800 mb-2">提出完了</h2>
-    <p class="text-sm text-slate-500 font-bold leading-relaxed mb-8">
-      経費情報とレシート/領収書を送信しました。
-    </p>
-    <button onclick="submitAnother()" class="w-full max-w-xs bg-slate-900 text-white py-4 rounded-2xl font-bold text-lg shadow-lg">
-      続けて提出する
-    </button>
-  </main>
-
-  <!-- エラー -->
-  <main id="view_error" class="hidden min-h-screen flex-col items-center justify-center bg-white px-6 text-center">
-    <div class="text-7xl mb-6">⚠️</div>
-    <h2 class="text-3xl font-extrabold text-slate-800 mb-2">送信エラー</h2>
-    <p id="errorMessage" class="text-sm text-slate-500 font-bold leading-relaxed mb-8">
-      送信できませんでした。
-    </p>
-    <button onclick="showView('form')" class="w-full max-w-xs bg-slate-900 text-white py-4 rounded-2xl font-bold text-lg shadow-lg">
-      入力画面に戻る
-    </button>
   </main>
 
   <script>
@@ -413,7 +109,9 @@
 
     const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzK9E5kd5VsGC2nq_hG9fFZgwD43tbRyXHLmchtH_WWuggrfYBGiE1b-a83Lf-_tcnx/exec";
 
-    const DRAFT_KEYS = [
+    const CARD_COUNT = 3;
+
+    const DRAFT_FIELDS = [
       "payer",
       "paymentMethod",
       "expenseType",
@@ -424,8 +122,12 @@
       "memo"
     ];
 
-    let selectedFiles = [];
-    let filesConfirmed = false;
+    const cardFiles = {};
+    const cardSending = {};
+
+    const SUBMISSION_HISTORY_KEY = "expense_submission_history_v1";
+    const SUBMISSION_HISTORY_OPEN_KEY = "expense_submission_history_open";
+    const SUBMISSION_HISTORY_MAX = 30;
 
     /***** ロック画面 *****/
     window.checkAutoPasscode = (val) => {
@@ -452,80 +154,547 @@
 
     /***** 初期表示 *****/
     window.addEventListener("DOMContentLoaded", () => {
-      const savedPayer = localStorage.getItem("expense_payer");
-      const savedPaymentMethod = localStorage.getItem("expense_paymentMethod");
+      renderExpenseCards();
 
-      if (savedPayer) {
-        document.getElementById("payer").value = savedPayer;
+      for (let cardId = 1; cardId <= CARD_COUNT; cardId++) {
+        cardFiles[cardId] = [];
+        cardSending[cardId] = false;
+        restoreDraftInputs(cardId);
+        setupDraftAutoSave(cardId);
+        setupPaymentDateHint(cardId);
       }
 
-      if (savedPaymentMethod) {
-        const paymentMethodInput = document.getElementById("paymentMethod");
-        paymentMethodInput.value = savedPaymentMethod;
-
-        // 旧保存値が残っている端末でも表示できるように補正
-        if (!paymentMethodInput.value) {
-          if (savedPaymentMethod === "立替") paymentMethodInput.value = "立替|未返金";
-          if (savedPaymentMethod === "支払者名義立替") paymentMethodInput.value = "支払者名義立替|未返金";
-          if (savedPaymentMethod === "会社支払い") paymentMethodInput.value = "LW資金支払い|対象外";
-          if (savedPaymentMethod === "LW資金支払い") paymentMethodInput.value = "LW資金支払い|対象外";
-          if (savedPaymentMethod === "不明") paymentMethodInput.value = "その他|要確認";
-          if (savedPaymentMethod === "その他") paymentMethodInput.value = "その他|要確認";
-        }
-      }
-
-      restoreDraftInputs();
-      setupDraftAutoSave();
-      setupPaymentDateHint();
+      restoreSubmissionHistoryOpenState();
+      renderSubmissionHistory();
     });
 
+
+    /***** 送信履歴 *****/
+    function todayKey() {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, "0");
+      const d = String(now.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
+    }
+
+    function formatTime(date) {
+      const hh = String(date.getHours()).padStart(2, "0");
+      const mm = String(date.getMinutes()).padStart(2, "0");
+      return `${hh}:${mm}`;
+    }
+
+    function loadSubmissionHistory() {
+      try {
+        const raw = localStorage.getItem(SUBMISSION_HISTORY_KEY);
+        const parsed = raw ? JSON.parse(raw) : [];
+        return Array.isArray(parsed)
+          ? parsed.filter(item => item && item.dateKey === todayKey()).slice(0, SUBMISSION_HISTORY_MAX)
+          : [];
+      } catch (err) {
+        return [];
+      }
+    }
+
+    function saveSubmissionHistory(items) {
+      localStorage.setItem(SUBMISSION_HISTORY_KEY, JSON.stringify(items.slice(0, SUBMISSION_HISTORY_MAX)));
+    }
+
+    function addSubmissionHistory(item) {
+      const items = loadSubmissionHistory();
+      const now = new Date();
+
+      items.unshift({
+        dateKey: todayKey(),
+        time: formatTime(now),
+        timestamp: now.getTime(),
+        cardId: item.cardId,
+        status: item.status,
+        statusType: item.statusType,
+        expenseType: item.expenseType || "未選択",
+        content: item.content || "",
+        amount: item.amount || "",
+        clientRequestId: item.clientRequestId || ""
+      });
+
+      saveSubmissionHistory(items);
+      renderSubmissionHistory();
+    }
+
+    function renderSubmissionHistory() {
+      const items = loadSubmissionHistory();
+      const summary = document.getElementById("submissionHistorySummary");
+      const list = document.getElementById("submissionHistoryList");
+
+      if (summary) {
+        summary.textContent = `本日の送信履歴 ${items.length}件`;
+      }
+
+      if (!list) return;
+
+      if (items.length === 0) {
+        list.innerHTML = `<div class="rounded-2xl bg-slate-50 border border-slate-100 p-3 text-xs font-bold text-slate-400">まだ送信履歴はありません。</div>`;
+        return;
+      }
+
+      list.innerHTML = items.map(item => {
+        const isError = item.statusType === "error";
+        const statusClass = isError ? "text-red-600 bg-red-50 border-red-100" : "text-lime-700 bg-lime-50 border-lime-100";
+        const amountText = item.amount ? ` / ¥${String(item.amount).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}` : "";
+        const contentText = item.content ? ` / ${escapeHtml(item.content).slice(0, 18)}` : "";
+        const requestShort = item.clientRequestId ? item.clientRequestId.slice(-10) : "";
+
+        return `
+          <div class="rounded-2xl border p-3 ${statusClass}">
+            <div class="flex items-center justify-between gap-2">
+              <div class="text-xs font-black">${escapeHtml(item.time)}　経費${item.cardId}　${escapeHtml(item.status)}</div>
+              <div class="text-[10px] font-bold opacity-70">${escapeHtml(requestShort)}</div>
+            </div>
+            <div class="mt-1 text-[11px] font-bold opacity-80">
+              ${escapeHtml(item.expenseType)}${amountText}${contentText}
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function toggleSubmissionHistory() {
+      const panel = document.getElementById("submissionHistoryPanel");
+      const arrow = document.getElementById("submissionHistoryArrow");
+      if (!panel) return;
+
+      const willOpen = panel.classList.contains("hidden");
+      panel.classList.toggle("hidden", !willOpen);
+      localStorage.setItem(SUBMISSION_HISTORY_OPEN_KEY, willOpen ? "true" : "false");
+
+      if (arrow) {
+        arrow.textContent = willOpen ? "▲" : "▼";
+      }
+    }
+
+    function restoreSubmissionHistoryOpenState() {
+      const panel = document.getElementById("submissionHistoryPanel");
+      const arrow = document.getElementById("submissionHistoryArrow");
+      const isOpen = localStorage.getItem(SUBMISSION_HISTORY_OPEN_KEY) === "true";
+
+      if (panel) panel.classList.toggle("hidden", !isOpen);
+      if (arrow) arrow.textContent = isOpen ? "▲" : "▼";
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    /***** カード描画 *****/
+    function renderExpenseCards() {
+      const root = document.getElementById("expenseCards");
+      root.innerHTML = "";
+
+      for (let cardId = 1; cardId <= CARD_COUNT; cardId++) {
+        const card = document.createElement("section");
+        card.className = "snap-start flex-none w-[calc(100vw-1.5rem)] lg:w-auto bg-white rounded-3xl shadow-sm border border-slate-200 p-3 flex flex-col gap-2.5";
+        card.id = `expenseCard_${cardId}`;
+        card.innerHTML = cardTemplate(cardId);
+        root.appendChild(card);
+      }
+    }
+
+    function cardTemplate(cardId) {
+      return `
+        <div class="flex items-start justify-between gap-3">
+          <h2 class="font-extrabold text-lg text-slate-800">経費${cardId}</h2>
+          <button
+            type="button"
+            onclick="resetCard(${cardId}, true)"
+            class="text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-1 rounded-lg shrink-0"
+          >
+            リセット
+          </button>
+        </div>
+
+        <div id="statusBox_${cardId}" class="hidden rounded-2xl border px-3 py-2 text-xs font-bold leading-relaxed"></div>
+
+        <!-- 支払者 -->
+        <div>
+          <label class="block text-xs font-bold text-slate-500 mb-1">
+            支払者 <span class="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            id="payer_${cardId}"
+            data-draft-field="payer"
+            required
+            placeholder="名前を入力"
+            class="w-full bg-slate-50 border border-slate-200 px-3 py-3 rounded-xl font-bold text-sm text-slate-800 focus:ring-2 focus:ring-lime-400 outline-none"
+          />
+        </div>
+
+        <!-- 支払方法 -->
+        <div>
+          <label class="block text-xs font-bold text-slate-500 mb-1">
+            支払方法 <span class="text-red-500">*</span>
+          </label>
+          <select
+            id="paymentMethod_${cardId}"
+            data-draft-field="paymentMethod"
+            required
+            class="w-full bg-slate-50 border border-slate-200 px-3 py-3 rounded-xl font-bold text-sm text-slate-800 focus:ring-2 focus:ring-lime-400 outline-none"
+          >
+            <option value="立替|未返金">立替（未返金）</option>
+            <option value="立替|返金済み">立替（返金済み）</option>
+            <option value="支払者名義立替|未返金">支払者名義立替（未返金）</option>
+            <option value="支払者名義立替|返金済み">支払者名義立替（返金済み）</option>
+            <option value="LW資金支払い|対象外">LW資金支払い（LWのお金で支払ったもの・書類のみ提出）</option>
+            <option value="その他|要確認">その他・要確認</option>
+          </select>
+        </div>
+
+        <!-- 経費の種類 -->
+        <div>
+          <label class="block text-xs font-bold text-slate-500 mb-1">
+            経費の種類 <span class="text-red-500">*</span>
+          </label>
+          <select
+            id="expenseType_${cardId}"
+            data-draft-field="expenseType"
+            required
+            class="w-full bg-slate-50 border border-slate-200 px-3 py-3 rounded-xl font-bold text-sm text-slate-800 focus:ring-2 focus:ring-lime-400 outline-none"
+          >
+            <option value="">選択してください</option>
+            <option value="備品">備品</option>
+            <option value="消耗品">消耗品</option>
+            <option value="交通費">交通費</option>
+            <option value="撮影関連">撮影関連</option>
+            <option value="イベント関連">イベント関連</option>
+            <option value="通信・アプリ">通信・アプリ</option>
+            <option value="飲食">飲食</option>
+            <option value="梱包・発送">梱包・発送</option>
+            <option value="その他">その他</option>
+            <option value="不明">不明</option>
+          </select>
+        </div>
+
+        <!-- 内容 -->
+        <div>
+          <label class="block text-xs font-bold text-slate-500 mb-1">
+            内容 <span class="text-red-500">*</span>
+          </label>
+          <textarea
+            id="content_${cardId}"
+            data-draft-field="content"
+            rows="2"
+            required
+            placeholder="何のために買ったか。例：撮影用小物、梱包テープなど"
+            class="w-full bg-slate-50 border border-slate-200 px-3 py-3 rounded-xl font-bold text-sm text-slate-800 focus:ring-2 focus:ring-lime-400 outline-none"
+          ></textarea>
+        </div>
+
+        <!-- 任意項目 -->
+        <div class="border-t border-slate-100 pt-3">
+          <p class="text-[10px] font-black text-slate-400 tracking-widest mb-2">OPTIONAL</p>
+
+          <div class="flex flex-col gap-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-500 mb-1">購入先</label>
+              <input
+                type="text"
+                id="purchasePlace_${cardId}"
+                data-draft-field="purchasePlace"
+                placeholder="ローソン、Amazon、ダイソーなど"
+                class="w-full bg-slate-50 border border-slate-200 px-3 py-3 rounded-xl font-bold text-sm text-slate-800 focus:ring-2 focus:ring-lime-400 outline-none"
+              />
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-500 mb-1">支払日</label>
+              <div class="relative">
+                <input
+                  type="date"
+                  id="paymentDate_${cardId}"
+                  data-draft-field="paymentDate"
+                  class="w-full bg-slate-50 border border-slate-200 px-3 py-3 rounded-xl font-bold text-sm text-slate-800 focus:ring-2 focus:ring-lime-400 outline-none"
+                />
+                <span
+                  id="paymentDateHint_${cardId}"
+                  class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400"
+                >年月日</span>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-500 mb-1">支払金額</label>
+              <input
+                type="number"
+                id="amount_${cardId}"
+                data-draft-field="amount"
+                inputmode="numeric"
+                placeholder="入力"
+                class="w-full bg-slate-50 border border-slate-200 px-3 py-3 rounded-xl font-bold text-sm text-slate-800 focus:ring-2 focus:ring-lime-400 outline-none"
+              />
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-500 mb-1">メモ</label>
+              <textarea
+                id="memo_${cardId}"
+                data-draft-field="memo"
+                rows="2"
+                placeholder="補足があれば入力"
+                class="w-full bg-slate-50 border border-slate-200 px-3 py-3 rounded-xl font-bold text-sm text-slate-800 focus:ring-2 focus:ring-lime-400 outline-none"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- レシート写真 / PDF -->
+        <div class="border-t border-slate-100 pt-3">
+          <label class="block text-xs font-bold text-slate-500 mb-1">
+            レシート写真 <span class="text-red-500">*</span>
+          </label>
+
+
+          <!-- 1枚目：必須 -->
+          <section class="bg-slate-50 border border-slate-200 rounded-2xl p-3">
+            <div class="flex justify-between items-center mb-2">
+              <p class="text-xs font-black text-slate-600">1枚目 <span class="text-red-500">*</span></p>
+              <p id="fileStatus_${cardId}_1" class="text-[10px] font-bold text-slate-400">未選択</p>
+            </div>
+
+            <input type="file" id="cameraImage_${cardId}_1" accept="image/*" capture="environment" class="hidden" onchange="handleImageSelected(event, ${cardId}, 0)" />
+            <input type="file" id="galleryImage_${cardId}_1" accept="image/*" class="hidden" onchange="handleImageSelected(event, ${cardId}, 0)" />
+
+            <div class="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onclick="document.getElementById('cameraImage_${cardId}_1').click()"
+                class="bg-slate-900 text-white py-3.5 rounded-2xl font-bold text-sm shadow-md active:scale-[0.99] transition-transform"
+              >
+                📷 撮影する
+              </button>
+
+              <button
+                type="button"
+                onclick="document.getElementById('galleryImage_${cardId}_1').click()"
+                class="bg-white border border-slate-300 text-slate-700 py-3.5 rounded-2xl font-bold text-sm shadow-sm active:scale-[0.99] transition-transform"
+              >
+                🖼 写真から選ぶ
+              </button>
+            </div>
+
+            <div id="imagePreviewBox_${cardId}_1" class="hidden mt-3">
+              <img id="imagePreview_${cardId}_1" src="" class="w-full rounded-xl border border-slate-200 shadow-sm" />
+            </div>
+          </section>
+
+          <!-- 2枚目：任意 -->
+          <button
+            type="button"
+            id="showSecondReceiptButton_${cardId}"
+            onclick="showSecondReceipt(${cardId})"
+            class="w-full mt-2 bg-white border border-dashed border-slate-300 text-slate-500 py-3 rounded-2xl font-bold text-sm active:scale-[0.99] transition-transform"
+          >
+            ＋ 2枚目を追加
+          </button>
+
+          <section id="secondReceiptSection_${cardId}" class="hidden mt-2 bg-slate-50 border border-slate-200 rounded-2xl p-3">
+            <div class="flex justify-between items-center mb-2">
+              <p class="text-xs font-black text-slate-600">2枚目 <span class="text-slate-400">任意</span></p>
+              <button type="button" onclick="removeSecondReceipt(${cardId})" class="text-[10px] font-bold text-slate-400 underline">
+                取り消す
+              </button>
+            </div>
+
+            <input type="file" id="cameraImage_${cardId}_2" accept="image/*" capture="environment" class="hidden" onchange="handleImageSelected(event, ${cardId}, 1)" />
+            <input type="file" id="galleryImage_${cardId}_2" accept="image/*" class="hidden" onchange="handleImageSelected(event, ${cardId}, 1)" />
+
+            <div class="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onclick="document.getElementById('cameraImage_${cardId}_2').click()"
+                class="bg-slate-900 text-white py-3.5 rounded-2xl font-bold text-sm shadow-md active:scale-[0.99] transition-transform"
+              >
+                📷 撮影する
+              </button>
+
+              <button
+                type="button"
+                onclick="document.getElementById('galleryImage_${cardId}_2').click()"
+                class="bg-white border border-slate-300 text-slate-700 py-3.5 rounded-2xl font-bold text-sm shadow-sm active:scale-[0.99] transition-transform"
+              >
+                🖼 写真から選ぶ
+              </button>
+            </div>
+
+            <div id="imagePreviewBox_${cardId}_2" class="hidden mt-3">
+              <img id="imagePreview_${cardId}_2" src="" class="w-full rounded-xl border border-slate-200 shadow-sm" />
+            </div>
+          </section>
+
+          <!-- PDF：サブメニュー -->
+          <div class="mt-2 border-t border-slate-200 pt-2">
+            <div class="flex items-center justify-between gap-2">
+              <button
+                type="button"
+                onclick="togglePdfSection(${cardId})"
+                class="text-left text-[11px] font-black text-slate-400 tracking-widest shrink-0"
+              >
+                PDFで提出する場合はこちら
+              </button>
+              <p class="text-[9px] text-slate-400 font-bold leading-tight text-right">
+                選択画像/PDFのみ送信<br>写真フォルダ全体にはアクセスしません
+              </p>
+            </div>
+
+            <section id="pdfSection_${cardId}" class="hidden mt-2 bg-white border border-slate-200 rounded-2xl p-3">
+              <p class="text-[10px] text-slate-400 font-bold mb-2 leading-relaxed">
+                PDFを選ぶ場合、写真は送信されません。画像とPDFの同時添付はできません。
+              </p>
+
+              <input type="file" id="pdfFile_${cardId}" accept="application/pdf" class="hidden" onchange="handlePdfSelected(event, ${cardId})" />
+
+              <button
+                type="button"
+                onclick="document.getElementById('pdfFile_${cardId}').click()"
+                class="w-full bg-slate-100 border border-slate-200 text-slate-700 py-3.5 rounded-2xl font-bold text-sm active:scale-[0.99] transition-transform"
+              >
+                📄 PDFを選ぶ
+              </button>
+
+              <div id="pdfPreviewBox_${cardId}" class="hidden mt-3 bg-slate-50 border border-slate-200 rounded-xl p-3">
+                <p class="text-xs font-bold text-slate-700">選択中のPDF</p>
+                <p id="pdfFileName_${cardId}" class="text-xs text-slate-500 font-bold break-all mt-1"></p>
+                <button type="button" onclick="removePdfFile(${cardId})" class="mt-3 text-[11px] text-slate-400 font-bold underline">
+                  PDFを取り消す
+                </button>
+              </div>
+            </section>
+          </div>
+        </div>
+
+        <!-- 送信 -->
+        <button
+          type="button"
+          onclick="submitCard(${cardId})"
+          id="submitButton_${cardId}"
+          class="w-full bg-lime-400 text-slate-900 py-4 rounded-2xl font-black text-base shadow-md mt-1 active:scale-[0.99] transition-transform disabled:opacity-50 disabled:active:scale-100"
+        >
+          経費${cardId}を送信する
+        </button>
+      `;
+    }
+
     /***** 入力途中の自動保存 *****/
-    function setupDraftAutoSave() {
-      DRAFT_KEYS.forEach(id => {
-        const el = document.getElementById(id);
+    function draftKey(cardId, field) {
+      return `expense_draft_card_${cardId}_${field}`;
+    }
+
+    function setupDraftAutoSave(cardId) {
+      DRAFT_FIELDS.forEach(field => {
+        const el = document.getElementById(`${field}_${cardId}`);
         if (!el) return;
 
         el.addEventListener("input", () => {
-          localStorage.setItem("expense_draft_" + id, el.value);
+          localStorage.setItem(draftKey(cardId, field), el.value);
+
+          if (field === "payer") {
+            localStorage.setItem("expense_payer", el.value);
+          }
+
+          if (field === "paymentMethod") {
+            localStorage.setItem("expense_paymentMethod", el.value);
+          }
         });
 
         el.addEventListener("change", () => {
-          localStorage.setItem("expense_draft_" + id, el.value);
+          localStorage.setItem(draftKey(cardId, field), el.value);
+
+          if (field === "payer") {
+            localStorage.setItem("expense_payer", el.value);
+          }
+
+          if (field === "paymentMethod") {
+            localStorage.setItem("expense_paymentMethod", el.value);
+          }
         });
       });
     }
 
-    function restoreDraftInputs() {
-      DRAFT_KEYS.forEach(id => {
-        const el = document.getElementById(id);
+    function restoreDraftInputs(cardId) {
+      const savedPayer = localStorage.getItem("expense_payer");
+      const savedPaymentMethod = localStorage.getItem("expense_paymentMethod");
+
+      DRAFT_FIELDS.forEach(field => {
+        const el = document.getElementById(`${field}_${cardId}`);
         if (!el) return;
 
-        const savedValue = localStorage.getItem("expense_draft_" + id);
+        const savedValue = localStorage.getItem(draftKey(cardId, field));
 
         if (savedValue !== null) {
-          el.value = savedValue;
+          el.value = normalizeSavedPaymentValue(field, savedValue);
+          return;
+        }
+
+        if (field === "payer" && savedPayer) {
+          el.value = savedPayer;
+        }
+
+        if (field === "paymentMethod" && savedPaymentMethod) {
+          el.value = normalizeSavedPaymentValue(field, savedPaymentMethod);
         }
       });
     }
 
-    function clearDraftInputs() {
-      DRAFT_KEYS.forEach(id => {
-        localStorage.removeItem("expense_draft_" + id);
+    function normalizeSavedPaymentValue(field, value) {
+      if (field !== "paymentMethod") return value;
+
+      const allowed = [
+        "立替|未返金",
+        "立替|返金済み",
+        "支払者名義立替|未返金",
+        "支払者名義立替|返金済み",
+        "LW資金支払い|対象外",
+        "その他|要確認"
+      ];
+
+      if (allowed.includes(value)) return value;
+      if (value === "立替") return "立替|未返金";
+      if (value === "支払者名義立替") return "支払者名義立替|未返金";
+      if (value === "会社支払い") return "LW資金支払い|対象外";
+      if (value === "LW資金支払い") return "LW資金支払い|対象外";
+      if (value === "不明") return "その他|要確認";
+      if (value === "その他") return "その他|要確認";
+
+      return "その他|要確認";
+    }
+
+    function clearDraftInputs(cardId, keepPayerAndPayment = true) {
+      DRAFT_FIELDS.forEach(field => {
+        if (keepPayerAndPayment && (field === "payer" || field === "paymentMethod")) {
+          return;
+        }
+
+        localStorage.removeItem(draftKey(cardId, field));
       });
     }
 
-    function setupPaymentDateHint() {
-      const paymentDate = document.getElementById("paymentDate");
+    /***** 支払日ヒント *****/
+    function setupPaymentDateHint(cardId) {
+      const paymentDate = document.getElementById(`paymentDate_${cardId}`);
       if (!paymentDate) return;
 
-      paymentDate.addEventListener("input", updatePaymentDateHint);
-      paymentDate.addEventListener("change", updatePaymentDateHint);
-      updatePaymentDateHint();
+      paymentDate.addEventListener("input", () => updatePaymentDateHint(cardId));
+      paymentDate.addEventListener("change", () => updatePaymentDateHint(cardId));
+      updatePaymentDateHint(cardId);
     }
 
-    function updatePaymentDateHint() {
-      const paymentDate = document.getElementById("paymentDate");
-      const hint = document.getElementById("paymentDateHint");
+    function updatePaymentDateHint(cardId) {
+      const paymentDate = document.getElementById(`paymentDate_${cardId}`);
+      const hint = document.getElementById(`paymentDateHint_${cardId}`);
       if (!paymentDate || !hint) return;
 
       if (paymentDate.value) {
@@ -539,7 +708,7 @@
       if (value && value.includes("|")) {
         const parts = value.split("|");
         return {
-          paymentMethod: parts[0] || "不明",
+          paymentMethod: parts[0] || "その他",
           refundStatus: parts[1] || "要確認"
         };
       }
@@ -563,44 +732,62 @@
       return { paymentMethod: "その他", refundStatus: "要確認" };
     }
 
-    /***** 画面切り替え *****/
-    function showView(name) {
-      ["view_form", "view_loading", "view_success", "view_error"].forEach(id => {
-        const el = document.getElementById(id);
-        el.classList.add("hidden");
-        el.classList.remove("block", "flex");
-      });
+    /***** カード状態表示 *****/
+    function setCardStatus(cardId, type, message) {
+      const box = document.getElementById(`statusBox_${cardId}`);
+      if (!box) return;
 
-      const target = document.getElementById("view_" + name);
+      box.className = "rounded-2xl border px-3 py-2 text-xs font-bold leading-relaxed";
 
-      if (name === "form") {
-        target.classList.remove("hidden");
-        target.classList.add("block");
-      } else {
-        target.classList.remove("hidden");
-        target.classList.add("flex");
+      if (type === "idle") {
+        box.classList.add("hidden");
+        box.textContent = "";
+        return;
       }
 
-      window.scrollTo(0, 0);
+      if (type === "sending") {
+        box.classList.add("bg-blue-50", "border-blue-100", "text-blue-700");
+      } else if (type === "success") {
+        box.classList.add("bg-lime-50", "border-lime-100", "text-lime-700");
+      } else if (type === "error") {
+        box.classList.add("bg-red-50", "border-red-100", "text-red-600");
+      } else {
+        box.classList.add("bg-slate-50", "border-slate-200", "text-slate-500");
+      }
+
+      box.textContent = message;
+      box.classList.remove("hidden");
+      box.classList.remove("animate-pop");
+      void box.offsetWidth;
+      box.classList.add("animate-pop");
+    }
+
+    function setCardSending(cardId, sending) {
+      cardSending[cardId] = sending;
+
+      const button = document.getElementById(`submitButton_${cardId}`);
+      if (!button) return;
+
+      button.disabled = sending;
+      button.textContent = sending ? "送信中..." : `経費${cardId}を送信する`;
     }
 
     /***** 添付ファイル選択 *****/
-    async function handleImageSelected(event, index) {
+    async function handleImageSelected(event, cardId, index) {
       const file = event.target.files[0];
       if (!file) return;
 
       if (!file.type.startsWith("image/")) {
-        showError("画像ファイルを選択してください。");
+        setCardStatus(cardId, "error", "画像ファイルを選択してください。");
         event.target.value = "";
         return;
       }
 
-      clearPdfState(false);
-      filesConfirmed = false;
+      clearPdfState(cardId, false);
 
       try {
         const base64 = await resizeImageToBase64(file, 1600, 0.78);
-        selectedFiles[index] = {
+        cardFiles[cardId][index] = {
           base64,
           mimeType: "image/jpeg",
           fileRole: index === 0 ? "receipt_image_1" : "receipt_image_2",
@@ -608,7 +795,7 @@
         };
       } catch (err) {
         const base64 = await fileToBase64(file);
-        selectedFiles[index] = {
+        cardFiles[cardId][index] = {
           base64,
           mimeType: file.type || "image/jpeg",
           fileRole: index === 0 ? "receipt_image_1" : "receipt_image_2",
@@ -616,11 +803,11 @@
         };
       }
 
-      const preview = document.getElementById(index === 0 ? "imagePreview1" : "imagePreview2");
-      const previewBox = document.getElementById(index === 0 ? "imagePreviewBox1" : "imagePreviewBox2");
-      const status = document.getElementById(index === 0 ? "fileStatus1" : null);
+      const preview = document.getElementById(`imagePreview_${cardId}_${index + 1}`);
+      const previewBox = document.getElementById(`imagePreviewBox_${cardId}_${index + 1}`);
+      const status = document.getElementById(`fileStatus_${cardId}_${index + 1}`);
 
-      preview.src = selectedFiles[index].base64;
+      preview.src = cardFiles[cardId][index].base64;
       previewBox.classList.remove("hidden");
 
       if (status) {
@@ -630,136 +817,110 @@
       }
 
       event.target.value = "";
-      updateFileConfirmBox();
+      setCardStatus(cardId, "idle", "");
     }
 
-    async function handlePdfSelected(event) {
+    async function handlePdfSelected(event, cardId) {
       const file = event.target.files[0];
       if (!file) return;
 
       const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
 
       if (!isPdf) {
-        showError("PDFファイルを選択してください。");
+        setCardStatus(cardId, "error", "PDFファイルを選択してください。");
         event.target.value = "";
         return;
       }
 
-      clearImageState(false);
-      filesConfirmed = false;
+      clearImageState(cardId, false);
 
       const base64 = await fileToBase64(file);
-      selectedFiles = [{
+      cardFiles[cardId] = [{
         base64,
         mimeType: "application/pdf",
         fileRole: "receipt_pdf",
         originalName: file.name || "receipt.pdf"
       }];
 
-      document.getElementById("pdfFileName").textContent = file.name || "receipt.pdf";
-      document.getElementById("pdfPreviewBox").classList.remove("hidden");
+      document.getElementById(`pdfFileName_${cardId}`).textContent = file.name || "receipt.pdf";
+      document.getElementById(`pdfPreviewBox_${cardId}`).classList.remove("hidden");
       event.target.value = "";
-      updateFileConfirmBox();
+      setCardStatus(cardId, "idle", "");
     }
 
-    function showSecondReceipt() {
-      document.getElementById("secondReceiptSection").classList.remove("hidden");
-      document.getElementById("showSecondReceiptButton").classList.add("hidden");
+    function showSecondReceipt(cardId) {
+      document.getElementById(`secondReceiptSection_${cardId}`).classList.remove("hidden");
+      document.getElementById(`showSecondReceiptButton_${cardId}`).classList.add("hidden");
     }
 
-    function removeSecondReceipt() {
-      selectedFiles[1] = null;
-      document.getElementById("cameraImage2").value = "";
-      document.getElementById("galleryImage2").value = "";
-      document.getElementById("imagePreview2").src = "";
-      document.getElementById("imagePreviewBox2").classList.add("hidden");
-      document.getElementById("secondReceiptSection").classList.add("hidden");
-      document.getElementById("showSecondReceiptButton").classList.remove("hidden");
-      filesConfirmed = false;
-      updateFileConfirmBox();
-    }
-
-    function togglePdfSection() {
-      document.getElementById("pdfSection").classList.toggle("hidden");
-    }
-
-    function removePdfFile() {
-      clearPdfState(true);
-      filesConfirmed = false;
-      updateFileConfirmBox();
-    }
-
-    function clearImageState(resetInputs) {
-      selectedFiles = [];
-
-      ["cameraImage1", "galleryImage1", "cameraImage2", "galleryImage2"].forEach(id => {
-        const el = document.getElementById(id);
-        if (el && resetInputs) el.value = "";
+    function removeSecondReceipt(cardId) {
+      cardFiles[cardId][1] = null;
+      ["cameraImage", "galleryImage"].forEach(prefix => {
+        const el = document.getElementById(`${prefix}_${cardId}_2`);
+        if (el) el.value = "";
       });
 
-      document.getElementById("imagePreview1").src = "";
-      document.getElementById("imagePreview2").src = "";
-      document.getElementById("imagePreviewBox1").classList.add("hidden");
-      document.getElementById("imagePreviewBox2").classList.add("hidden");
-      document.getElementById("secondReceiptSection").classList.add("hidden");
-      document.getElementById("showSecondReceiptButton").classList.remove("hidden");
+      document.getElementById(`imagePreview_${cardId}_2`).src = "";
+      document.getElementById(`imagePreviewBox_${cardId}_2`).classList.add("hidden");
+      document.getElementById(`secondReceiptSection_${cardId}`).classList.add("hidden");
+      document.getElementById(`showSecondReceiptButton_${cardId}`).classList.remove("hidden");
 
-      const status1 = document.getElementById("fileStatus1");
-      status1.textContent = "未選択";
-      status1.classList.remove("text-lime-700");
-      status1.classList.add("text-slate-400");
+      const status = document.getElementById(`fileStatus_${cardId}_2`);
+      if (status) {
+        status.textContent = "未選択";
+        status.classList.remove("text-lime-700");
+        status.classList.add("text-slate-400");
+      }
     }
 
-    function clearPdfState(resetInputs) {
-      if (selectedFiles.some(file => file && file.mimeType === "application/pdf")) {
-        selectedFiles = [];
+    function togglePdfSection(cardId) {
+      document.getElementById(`pdfSection_${cardId}`).classList.toggle("hidden");
+    }
+
+    function removePdfFile(cardId) {
+      clearPdfState(cardId, true);
+    }
+
+    function clearImageState(cardId, resetInputs) {
+      cardFiles[cardId] = [];
+
+      ["cameraImage", "galleryImage"].forEach(prefix => {
+        [1, 2].forEach(slot => {
+          const el = document.getElementById(`${prefix}_${cardId}_${slot}`);
+          if (el && resetInputs) el.value = "";
+        });
+      });
+
+      [1, 2].forEach(slot => {
+        document.getElementById(`imagePreview_${cardId}_${slot}`).src = "";
+        document.getElementById(`imagePreviewBox_${cardId}_${slot}`).classList.add("hidden");
+
+        const status = document.getElementById(`fileStatus_${cardId}_${slot}`);
+        if (status) {
+          status.textContent = slot === 1 ? "未選択" : "未選択";
+          status.classList.remove("text-lime-700");
+          status.classList.add("text-slate-400");
+        }
+      });
+
+      document.getElementById(`secondReceiptSection_${cardId}`).classList.add("hidden");
+      document.getElementById(`showSecondReceiptButton_${cardId}`).classList.remove("hidden");
+    }
+
+    function clearPdfState(cardId, resetInputs) {
+      if ((cardFiles[cardId] || []).some(file => file && file.mimeType === "application/pdf")) {
+        cardFiles[cardId] = [];
       }
 
-      const pdfInput = document.getElementById("pdfFile");
+      const pdfInput = document.getElementById(`pdfFile_${cardId}`);
       if (pdfInput && resetInputs) pdfInput.value = "";
 
-      document.getElementById("pdfFileName").textContent = "";
-      document.getElementById("pdfPreviewBox").classList.add("hidden");
+      document.getElementById(`pdfFileName_${cardId}`).textContent = "";
+      document.getElementById(`pdfPreviewBox_${cardId}`).classList.add("hidden");
     }
 
-    function updateFileConfirmBox() {
-      const files = getSelectedFiles();
-      const box = document.getElementById("fileConfirmBox");
-      const status = document.getElementById("fileStatus");
-      const button = document.getElementById("confirmFileButton");
-
-      if (files.length === 0) {
-        box.classList.add("hidden");
-        status.classList.add("hidden");
-        button.classList.remove("hidden");
-        return;
-      }
-
-      box.classList.remove("hidden");
-      status.classList.add("hidden");
-      button.classList.remove("hidden");
-    }
-
-    function confirmFiles() {
-      const files = getSelectedFiles();
-
-      if (files.length === 0) {
-        showError("レシート写真またはPDFを選択してください。");
-        return;
-      }
-
-      filesConfirmed = true;
-      document.getElementById("fileStatus").classList.remove("hidden");
-      document.getElementById("confirmFileButton").classList.add("hidden");
-
-      const box = document.getElementById("fileConfirmBox");
-      box.classList.remove("animate-pop");
-      void box.offsetWidth;
-      box.classList.add("animate-pop");
-    }
-
-    function getSelectedFiles() {
-      return selectedFiles.filter(Boolean);
+    function getSelectedFiles(cardId) {
+      return (cardFiles[cardId] || []).filter(Boolean);
     }
 
     function fileToBase64(file) {
@@ -812,30 +973,28 @@
     }
 
     /***** 送信 *****/
-    async function submitExpense(event) {
-      event.preventDefault();
+    async function submitCard(cardId) {
+      if (cardSending[cardId]) {
+        return;
+      }
 
-      const payer = document.getElementById("payer").value.trim();
-      const paymentMethodValue = document.getElementById("paymentMethod").value;
+      const payer = document.getElementById(`payer_${cardId}`).value.trim();
+      const paymentMethodValue = document.getElementById(`paymentMethod_${cardId}`).value;
       const paymentInfo = normalizePaymentSelection(paymentMethodValue);
       const paymentMethod = paymentInfo.paymentMethod;
       const refundStatus = paymentInfo.refundStatus;
-      const expenseType = document.getElementById("expenseType").value;
-      const content = document.getElementById("content").value.trim();
-      const files = getSelectedFiles();
+      const expenseType = document.getElementById(`expenseType_${cardId}`).value;
+      const content = document.getElementById(`content_${cardId}`).value.trim();
+      const files = getSelectedFiles(cardId);
+      const clientRequestId = createClientRequestId(cardId);
 
       if (!payer || !paymentMethod || !expenseType || !content) {
-        showError("必須項目を入力してください。");
+        setCardStatus(cardId, "error", "必須項目を入力してください。");
         return;
       }
 
       if (files.length === 0) {
-        showError("レシート写真またはPDFを選択してください。");
-        return;
-      }
-
-      if (!filesConfirmed) {
-        showError("添付ファイルを確認して「この内容でOK」を押してください。");
+        setCardStatus(cardId, "error", "レシート写真またはPDFを選択してください。");
         return;
       }
 
@@ -848,10 +1007,11 @@
         refundStatus,
         expenseType,
         content,
-        purchasePlace: document.getElementById("purchasePlace").value.trim(),
-        paymentDate: document.getElementById("paymentDate").value,
-        amount: document.getElementById("amount").value,
-        memo: document.getElementById("memo").value.trim(),
+        purchasePlace: document.getElementById(`purchasePlace_${cardId}`).value.trim(),
+        paymentDate: document.getElementById(`paymentDate_${cardId}`).value,
+        amount: document.getElementById(`amount_${cardId}`).value,
+        memo: document.getElementById(`memo_${cardId}`).value.trim(),
+        clientRequestId,
 
         // 新形式：GAS側で複数ファイルを保存するために使う
         files: files.map(file => ({
@@ -866,7 +1026,8 @@
         mimeType: files[0].mimeType
       };
 
-      showView("loading");
+      setCardSending(cardId, true);
+      setCardStatus(cardId, "sending", "送信中です。他のカードはそのまま入力できます。");
 
       try {
         await fetch(GAS_WEB_APP_URL, {
@@ -878,103 +1039,131 @@
           body: JSON.stringify(payload)
         });
 
-        clearFormAfterSubmit();
-        showView("success");
+        clearCardAfterSubmit(cardId);
+        setCardStatus(cardId, "success", "送信処理を完了しました。必要に応じて経費台帳をご確認ください。");
+        addSubmissionHistory({
+          cardId,
+          status: "送信処理完了",
+          statusType: "success",
+          expenseType,
+          content,
+          amount: payload.amount,
+          clientRequestId
+        });
 
       } catch (err) {
         console.error(err);
-        showError("送信に失敗しました。通信環境を確認して、もう一度お試しください。");
+        setCardStatus(cardId, "error", "送信に失敗しました。入力内容と添付ファイルは残しています。通信環境を確認して、もう一度お試しください。");
+        addSubmissionHistory({
+          cardId,
+          status: "送信失敗",
+          statusType: "error",
+          expenseType,
+          content,
+          amount: payload.amount,
+          clientRequestId
+        });
+
+      } finally {
+        setCardSending(cardId, false);
       }
     }
 
-    function clearFormAfterSubmit() {
-      document.getElementById("expenseType").value = "";
-      document.getElementById("content").value = "";
-      document.getElementById("purchasePlace").value = "";
-      document.getElementById("paymentDate").value = "";
-      document.getElementById("amount").value = "";
-      document.getElementById("memo").value = "";
+    function createClientRequestId(cardId) {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, "0");
+      const d = String(now.getDate()).padStart(2, "0");
+      const hh = String(now.getHours()).padStart(2, "0");
+      const mm = String(now.getMinutes()).padStart(2, "0");
+      const ss = String(now.getSeconds()).padStart(2, "0");
+      const rand = Math.random().toString(36).slice(2, 8);
 
-      clearAllFileState();
-      clearDraftInputs();
-      updatePaymentDateHint();
+      return `REQ-${y}${m}${d}-${hh}${mm}${ss}-C${cardId}-${rand}`;
     }
 
-    function resetForm() {
-      if (!confirm("入力内容をリセットしますか？")) return;
+    function clearCardAfterSubmit(cardId) {
+      const keepPayer = document.getElementById(`payer_${cardId}`).value;
+      const keepPaymentMethod = document.getElementById(`paymentMethod_${cardId}`).value;
 
-      document.getElementById("expenseForm").reset();
+      ["expenseType", "content", "purchasePlace", "paymentDate", "amount", "memo"].forEach(field => {
+        const el = document.getElementById(`${field}_${cardId}`);
+        if (el) el.value = "";
+      });
+
+      document.getElementById(`payer_${cardId}`).value = keepPayer;
+      document.getElementById(`paymentMethod_${cardId}`).value = keepPaymentMethod;
+
+      clearAllFileState(cardId);
+      clearDraftInputs(cardId, true);
+      updatePaymentDateHint(cardId);
+    }
+
+    function resetCard(cardId, askConfirm) {
+      if (askConfirm && !confirm(`経費${cardId}の入力内容をリセットしますか？`)) return;
 
       const savedPayer = localStorage.getItem("expense_payer");
       const savedPaymentMethod = localStorage.getItem("expense_paymentMethod");
 
-      if (savedPayer) {
-        document.getElementById("payer").value = savedPayer;
-      }
+      DRAFT_FIELDS.forEach(field => {
+        const el = document.getElementById(`${field}_${cardId}`);
+        if (!el) return;
 
-      if (savedPaymentMethod) {
-        const paymentMethodInput = document.getElementById("paymentMethod");
-        paymentMethodInput.value = savedPaymentMethod;
-
-        // 旧保存値が残っている端末でも表示できるように補正
-        if (!paymentMethodInput.value) {
-          if (savedPaymentMethod === "立替") paymentMethodInput.value = "立替|未返金";
-          if (savedPaymentMethod === "支払者名義立替") paymentMethodInput.value = "支払者名義立替|未返金";
-          if (savedPaymentMethod === "会社支払い") paymentMethodInput.value = "LW資金支払い|対象外";
-          if (savedPaymentMethod === "LW資金支払い") paymentMethodInput.value = "LW資金支払い|対象外";
-          if (savedPaymentMethod === "不明") paymentMethodInput.value = "その他|要確認";
-          if (savedPaymentMethod === "その他") paymentMethodInput.value = "その他|要確認";
+        if (field === "payer") {
+          el.value = savedPayer || "";
+        } else if (field === "paymentMethod") {
+          el.value = normalizeSavedPaymentValue(field, savedPaymentMethod || "立替|未返金");
+        } else {
+          el.value = "";
         }
-      }
+      });
 
-      clearAllFileState();
-      clearDraftInputs();
-      updatePaymentDateHint();
+      clearAllFileState(cardId);
+      clearDraftInputs(cardId, true);
+      setCardStatus(cardId, "idle", "");
+      updatePaymentDateHint(cardId);
     }
 
-    function clearAllFileState() {
-      selectedFiles = [];
-      filesConfirmed = false;
+    function resetAllCards() {
+      if (!confirm("3つのカードの入力内容をすべてリセットしますか？")) return;
+
+      for (let cardId = 1; cardId <= CARD_COUNT; cardId++) {
+        resetCard(cardId, false);
+      }
+    }
+
+    function clearAllFileState(cardId) {
+      cardFiles[cardId] = [];
 
       [
-        "cameraImage1",
-        "galleryImage1",
-        "cameraImage2",
-        "galleryImage2",
-        "pdfFile"
+        `cameraImage_${cardId}_1`,
+        `galleryImage_${cardId}_1`,
+        `cameraImage_${cardId}_2`,
+        `galleryImage_${cardId}_2`,
+        `pdfFile_${cardId}`
       ].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.value = "";
       });
 
-      document.getElementById("imagePreview1").src = "";
-      document.getElementById("imagePreview2").src = "";
-      document.getElementById("imagePreviewBox1").classList.add("hidden");
-      document.getElementById("imagePreviewBox2").classList.add("hidden");
-      document.getElementById("secondReceiptSection").classList.add("hidden");
-      document.getElementById("showSecondReceiptButton").classList.remove("hidden");
+      [1, 2].forEach(slot => {
+        document.getElementById(`imagePreview_${cardId}_${slot}`).src = "";
+        document.getElementById(`imagePreviewBox_${cardId}_${slot}`).classList.add("hidden");
 
-      const status1 = document.getElementById("fileStatus1");
-      status1.textContent = "未選択";
-      status1.classList.remove("text-lime-700");
-      status1.classList.add("text-slate-400");
+        const status = document.getElementById(`fileStatus_${cardId}_${slot}`);
+        if (status) {
+          status.textContent = "未選択";
+          status.classList.remove("text-lime-700");
+          status.classList.add("text-slate-400");
+        }
+      });
 
-      document.getElementById("pdfFileName").textContent = "";
-      document.getElementById("pdfPreviewBox").classList.add("hidden");
-      document.getElementById("pdfSection").classList.add("hidden");
+      document.getElementById(`secondReceiptSection_${cardId}`).classList.add("hidden");
+      document.getElementById(`showSecondReceiptButton_${cardId}`).classList.remove("hidden");
 
-      document.getElementById("fileConfirmBox").classList.add("hidden");
-      document.getElementById("fileStatus").classList.add("hidden");
-      document.getElementById("confirmFileButton").classList.remove("hidden");
-    }
-
-    function submitAnother() {
-      showView("form");
-    }
-
-    function showError(message) {
-      document.getElementById("errorMessage").textContent = message;
-      showView("error");
+      document.getElementById(`pdfFileName_${cardId}`).textContent = "";
+      document.getElementById(`pdfPreviewBox_${cardId}`).classList.add("hidden");
+      document.getElementById(`pdfSection_${cardId}`).classList.add("hidden");
     }
   </script>
 </body>
