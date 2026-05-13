@@ -95,8 +95,10 @@
           >
             <option value="立替|未返金">立替（未返金）</option>
             <option value="立替|返金済み">立替（返金済み）</option>
-            <option value="支払者名義立替|対象外">支払者名義立替</option>
-            <option value="不明|要確認">不明</option>
+            <option value="支払者名義立替|未返金">支払者名義立替（未返金）</option>
+            <option value="支払者名義立替|返金済み">支払者名義立替（返金済み）</option>
+            <option value="LW資金支払い|対象外">LW資金支払い（LWのお金で支払ったもの・書類のみ提出）</option>
+            <option value="その他|要確認">その他・要確認</option>
           </select>
         </div>
 
@@ -461,11 +463,14 @@
         const paymentMethodInput = document.getElementById("paymentMethod");
         paymentMethodInput.value = savedPaymentMethod;
 
-        // 旧保存値（立替 / 支払者名義立替 / 不明）が残っている端末でも表示できるように補正
+        // 旧保存値が残っている端末でも表示できるように補正
         if (!paymentMethodInput.value) {
           if (savedPaymentMethod === "立替") paymentMethodInput.value = "立替|未返金";
-          if (savedPaymentMethod === "支払者名義立替") paymentMethodInput.value = "支払者名義立替|対象外";
-          if (savedPaymentMethod === "不明") paymentMethodInput.value = "不明|要確認";
+          if (savedPaymentMethod === "支払者名義立替") paymentMethodInput.value = "支払者名義立替|未返金";
+          if (savedPaymentMethod === "会社支払い") paymentMethodInput.value = "LW資金支払い|対象外";
+          if (savedPaymentMethod === "LW資金支払い") paymentMethodInput.value = "LW資金支払い|対象外";
+          if (savedPaymentMethod === "不明") paymentMethodInput.value = "その他|要確認";
+          if (savedPaymentMethod === "その他") paymentMethodInput.value = "その他|要確認";
         }
       }
 
@@ -544,10 +549,18 @@
       }
 
       if (value === "支払者名義立替") {
-        return { paymentMethod: "支払者名義立替", refundStatus: "対象外" };
+        return { paymentMethod: "支払者名義立替", refundStatus: "未返金" };
       }
 
-      return { paymentMethod: "不明", refundStatus: "要確認" };
+      if (value === "会社支払い" || value === "LW資金支払い") {
+        return { paymentMethod: "LW資金支払い", refundStatus: "対象外" };
+      }
+
+      if (value === "不明" || value === "その他") {
+        return { paymentMethod: "その他", refundStatus: "要確認" };
+      }
+
+      return { paymentMethod: "その他", refundStatus: "要確認" };
     }
 
     /***** 画面切り替え *****/
@@ -903,11 +916,14 @@
         const paymentMethodInput = document.getElementById("paymentMethod");
         paymentMethodInput.value = savedPaymentMethod;
 
-        // 旧保存値（立替 / 支払者名義立替 / 不明）が残っている端末でも表示できるように補正
+        // 旧保存値が残っている端末でも表示できるように補正
         if (!paymentMethodInput.value) {
           if (savedPaymentMethod === "立替") paymentMethodInput.value = "立替|未返金";
-          if (savedPaymentMethod === "支払者名義立替") paymentMethodInput.value = "支払者名義立替|対象外";
-          if (savedPaymentMethod === "不明") paymentMethodInput.value = "不明|要確認";
+          if (savedPaymentMethod === "支払者名義立替") paymentMethodInput.value = "支払者名義立替|未返金";
+          if (savedPaymentMethod === "会社支払い") paymentMethodInput.value = "LW資金支払い|対象外";
+          if (savedPaymentMethod === "LW資金支払い") paymentMethodInput.value = "LW資金支払い|対象外";
+          if (savedPaymentMethod === "不明") paymentMethodInput.value = "その他|要確認";
+          if (savedPaymentMethod === "その他") paymentMethodInput.value = "その他|要確認";
         }
       }
 
