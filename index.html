@@ -122,6 +122,14 @@
       "memo"
     ];
 
+    // 送信後も残す項目。カードを用途別テンプレートとして使えるようにする。
+    const PRESERVE_AFTER_SUBMIT_FIELDS = [
+      "payer",
+      "paymentMethod",
+      "expenseType",
+      "content"
+    ];
+
     const cardFiles = {};
     const cardSending = {};
 
@@ -346,10 +354,10 @@
             class="w-full bg-slate-50 border border-slate-200 px-3 py-3 rounded-xl font-bold text-sm text-slate-800 focus:ring-2 focus:ring-lime-400 outline-none"
           >
             <option value="立替|未返金">立替（未返金）</option>
-            <option value="立替|返金済み">立替（返金済み）</option>
             <option value="支払者名義立替|未返金">支払者名義立替（未返金）</option>
-            <option value="支払者名義立替|返金済み">支払者名義立替（返金済み）</option>
             <option value="LW資金支払い|対象外">LW資金支払い（LWのお金で支払ったもの・書類のみ提出）</option>
+            <option value="立替|返金済み">立替（返金済み）</option>
+            <option value="支払者名義立替|返金済み">支払者名義立替（返金済み）</option>
             <option value="その他|要確認">その他・要確認</option>
           </select>
         </div>
@@ -672,9 +680,9 @@
       return "その他|要確認";
     }
 
-    function clearDraftInputs(cardId, keepPayerAndPayment = true) {
+    function clearDraftInputs(cardId, keepPreservedFields = true) {
       DRAFT_FIELDS.forEach(field => {
-        if (keepPayerAndPayment && (field === "payer" || field === "paymentMethod")) {
+        if (keepPreservedFields && PRESERVE_AFTER_SUBMIT_FIELDS.includes(field)) {
           return;
         }
 
@@ -1083,16 +1091,27 @@
     }
 
     function clearCardAfterSubmit(cardId) {
-      const keepPayer = document.getElementById(`payer_${cardId}`).value;
-      const keepPaymentMethod = document.getElementById(`paymentMethod_${cardId}`).value;
+      // カードを用途別テンプレートとして使えるように、
+      // 支払者・支払方法・経費の種類・内容は送信後も残す。
+      const preservedValues = {};
+      PRESERVE_AFTER_SUBMIT_FIELDS.forEach(field => {
+        const el = document.getElementById(`${field}_${cardId}`);
+        preservedValues[field] = el ? el.value : "";
+      });
 
-      ["expenseType", "content", "purchasePlace", "paymentDate", "amount", "memo"].forEach(field => {
+      // 金額・日付・購入先・メモ・添付だけは、次の経費と混ざると危ないので消す。
+      ["purchasePlace", "paymentDate", "amount", "memo"].forEach(field => {
         const el = document.getElementById(`${field}_${cardId}`);
         if (el) el.value = "";
       });
 
-      document.getElementById(`payer_${cardId}`).value = keepPayer;
-      document.getElementById(`paymentMethod_${cardId}`).value = keepPaymentMethod;
+      PRESERVE_AFTER_SUBMIT_FIELDS.forEach(field => {
+        const el = document.getElementById(`${field}_${cardId}`);
+        if (el) {
+          el.value = preservedValues[field] || "";
+          localStorage.setItem(draftKey(cardId, field), el.value);
+        }
+      });
 
       clearAllFileState(cardId);
       clearDraftInputs(cardId, true);
