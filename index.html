@@ -16,6 +16,25 @@
       100% { transform: scale(1); }
     }
     .animate-pop { animation: pop 0.25s ease-in-out; }
+
+    /* 横スワイプ安定化：見た目は変えず、止まり方だけ強める */
+    .expense-swipe-container {
+      scroll-snap-type: x mandatory;
+      overscroll-behavior-x: contain;
+      -webkit-overflow-scrolling: touch;
+      scroll-behavior: smooth;
+    }
+
+    .expense-swipe-card {
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+    }
+
+    @media (min-width: 1024px) {
+      .expense-swipe-container {
+        scroll-snap-type: none;
+      }
+    }
   </style>
 </head>
 
@@ -100,7 +119,7 @@
       <!-- スマホ：横スワイプ / PC：3列表示 -->
       <div
         id="expenseCards"
-        class="no-scrollbar flex gap-3 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-5 lg:grid lg:grid-cols-3 lg:overflow-visible"
+        class="expense-swipe-container no-scrollbar flex gap-3 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-5 lg:grid lg:grid-cols-3 lg:overflow-visible"
       ></div>
 
       <div class="text-center text-[10px] font-bold text-slate-400 lg:hidden">
@@ -180,7 +199,48 @@
 
       restoreSubmissionHistoryOpenState();
       renderSubmissionHistory();
+      setupSwipeSnapAssist();
     });
+
+
+    /***** 横スワイプ安定化 *****/
+    function setupSwipeSnapAssist() {
+      const container = document.getElementById("expenseCards");
+      if (!container) return;
+
+      let snapTimer = null;
+
+      container.addEventListener("scroll", () => {
+        if (window.matchMedia("(min-width: 1024px)").matches) return;
+
+        clearTimeout(snapTimer);
+        snapTimer = setTimeout(() => {
+          snapToNearestCard(container);
+        }, 120);
+      }, { passive: true });
+    }
+
+    function snapToNearestCard(container) {
+      const cards = Array.from(container.querySelectorAll(".expense-swipe-card"));
+      if (cards.length === 0) return;
+
+      const currentLeft = container.scrollLeft;
+      let nearest = cards[0];
+      let nearestDistance = Math.abs(cards[0].offsetLeft - currentLeft);
+
+      cards.forEach(card => {
+        const distance = Math.abs(card.offsetLeft - currentLeft);
+        if (distance < nearestDistance) {
+          nearest = card;
+          nearestDistance = distance;
+        }
+      });
+
+      container.scrollTo({
+        left: nearest.offsetLeft,
+        behavior: "smooth"
+      });
+    }
 
 
     /***** 送信履歴 *****/
@@ -311,7 +371,7 @@
 
       for (let cardId = 1; cardId <= CARD_COUNT; cardId++) {
         const card = document.createElement("section");
-        card.className = "snap-start flex-none w-[calc(100vw-1.5rem)] lg:w-auto bg-white rounded-3xl shadow-sm border border-slate-200 p-3 flex flex-col gap-2.5";
+        card.className = "expense-swipe-card snap-start snap-always flex-none w-[calc(100vw-1.5rem)] lg:w-auto bg-white rounded-3xl shadow-sm border border-slate-200 p-3 flex flex-col gap-2.5";
         card.id = `expenseCard_${cardId}`;
         card.innerHTML = cardTemplate(cardId);
         root.appendChild(card);
