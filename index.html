@@ -56,6 +56,12 @@
     </div>
   </header>
 
+  <!-- 一時通知 -->
+  <div
+    id="globalToast"
+    class="fixed top-16 left-1/2 -translate-x-1/2 z-[80] hidden rounded-2xl border px-4 py-3 text-sm font-extrabold shadow-lg bg-white max-w-[92vw] text-center"
+  ></div>
+
   <!-- メイン -->
   <main id="view_form" class="min-h-screen bg-slate-50 pb-8">
     <div class="max-w-7xl mx-auto p-3">
@@ -325,8 +331,6 @@
           </button>
         </div>
 
-        <div id="statusBox_${cardId}" class="hidden rounded-2xl border px-3 py-2 text-xs font-bold leading-relaxed"></div>
-
         <!-- 支払者 -->
         <div>
           <label class="block text-xs font-bold text-slate-500 mb-1">
@@ -460,7 +464,7 @@
         </div>
 
         <!-- レシート写真 / PDF -->
-        <div class="border-t border-slate-100 pt-3">
+        <div id="receiptBlock_${cardId}" class="border-t border-slate-100 pt-3 rounded-2xl">
           <label class="block text-xs font-bold text-slate-500 mb-1">
             レシート写真 <span class="text-red-500">*</span>
           </label>
@@ -740,6 +744,102 @@
       return { paymentMethod: "その他", refundStatus: "要確認" };
     }
 
+    /***** 入力チェック・一時通知 *****/
+    function showGlobalToast(message, type = "success", duration = 1800) {
+      const toast = document.getElementById("globalToast");
+      if (!toast) return;
+
+      toast.className = "fixed top-16 left-1/2 -translate-x-1/2 z-[80] rounded-2xl border px-4 py-3 text-sm font-extrabold shadow-lg max-w-[92vw] text-center transition-opacity duration-200";
+
+      if (type === "success") {
+        toast.classList.add("bg-lime-50", "border-lime-200", "text-lime-800");
+      } else if (type === "error") {
+        toast.classList.add("bg-red-50", "border-red-200", "text-red-700");
+      } else if (type === "sending") {
+        toast.classList.add("bg-blue-50", "border-blue-200", "text-blue-700");
+      } else {
+        toast.classList.add("bg-white", "border-slate-200", "text-slate-700");
+      }
+
+      toast.textContent = message;
+      toast.classList.remove("hidden", "opacity-0");
+      toast.classList.add("opacity-100");
+
+      clearTimeout(window.__expenseToastTimer);
+      window.__expenseToastTimer = setTimeout(() => {
+        toast.classList.remove("opacity-100");
+        toast.classList.add("opacity-0");
+        setTimeout(() => toast.classList.add("hidden"), 220);
+      }, duration);
+    }
+
+    function requiredElements(cardId) {
+      return [
+        document.getElementById(`payer_${cardId}`),
+        document.getElementById(`paymentMethod_${cardId}`),
+        document.getElementById(`expenseType_${cardId}`),
+        document.getElementById(`content_${cardId}`)
+      ].filter(Boolean);
+    }
+
+    function clearElementError(el) {
+      if (!el) return;
+      el.setCustomValidity("");
+      el.classList.remove("border-red-400", "ring-2", "ring-red-100");
+    }
+
+    function markElementError(el) {
+      if (!el) return;
+      el.classList.add("border-red-400", "ring-2", "ring-red-100");
+    }
+
+    function clearReceiptError(cardId) {
+      const block = document.getElementById(`receiptBlock_${cardId}`);
+      if (!block) return;
+      block.classList.remove("ring-2", "ring-red-100", "border", "border-red-200", "bg-red-50");
+    }
+
+    function markReceiptError(cardId) {
+      const block = document.getElementById(`receiptBlock_${cardId}`);
+      if (!block) return;
+      block.classList.add("ring-2", "ring-red-100", "border", "border-red-200", "bg-red-50");
+    }
+
+    function clearCardValidation(cardId) {
+      requiredElements(cardId).forEach(clearElementError);
+      clearReceiptError(cardId);
+    }
+
+    function validateCardBeforeSubmit(cardId) {
+      clearCardValidation(cardId);
+
+      const content = document.getElementById(`content_${cardId}`);
+      if (content && !content.value.trim()) {
+        content.setCustomValidity("この項目を入力してください。");
+      }
+
+      const firstInvalid = requiredElements(cardId).find(el => !el.checkValidity());
+      if (firstInvalid) {
+        markElementError(firstInvalid);
+        firstInvalid.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+        setTimeout(() => firstInvalid.reportValidity(), 250);
+        showGlobalToast(`経費${cardId}：未入力の項目があります`, "error", 1800);
+        return false;
+      }
+
+      const files = getSelectedFiles(cardId);
+      if (files.length === 0) {
+        markReceiptError(cardId);
+        const block = document.getElementById(`receiptBlock_${cardId}`);
+        if (block) block.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+        setCardStatus(cardId, "error", "レシート写真またはPDFを選択してください。");
+        showGlobalToast(`経費${cardId}：レシート写真またはPDFが未選択です`, "error", 2000);
+        return false;
+      }
+
+      return true;
+    }
+
     /***** カード状態表示 *****/
     function setCardStatus(cardId, type, message) {
       const box = document.getElementById(`statusBox_${cardId}`);
@@ -747,17 +847,13 @@
 
       box.className = "rounded-2xl border px-3 py-2 text-xs font-bold leading-relaxed";
 
-      if (type === "idle") {
+      if (type === "idle" || type === "success" || type === "sending") {
         box.classList.add("hidden");
         box.textContent = "";
         return;
       }
 
-      if (type === "sending") {
-        box.classList.add("bg-blue-50", "border-blue-100", "text-blue-700");
-      } else if (type === "success") {
-        box.classList.add("bg-lime-50", "border-lime-100", "text-lime-700");
-      } else if (type === "error") {
+      if (type === "error") {
         box.classList.add("bg-red-50", "border-red-100", "text-red-600");
       } else {
         box.classList.add("bg-slate-50", "border-slate-200", "text-slate-500");
@@ -825,6 +921,7 @@
       }
 
       event.target.value = "";
+      clearReceiptError(cardId);
       setCardStatus(cardId, "idle", "");
     }
 
@@ -853,6 +950,7 @@
       document.getElementById(`pdfFileName_${cardId}`).textContent = file.name || "receipt.pdf";
       document.getElementById(`pdfPreviewBox_${cardId}`).classList.remove("hidden");
       event.target.value = "";
+      clearReceiptError(cardId);
       setCardStatus(cardId, "idle", "");
     }
 
@@ -996,13 +1094,7 @@
       const files = getSelectedFiles(cardId);
       const clientRequestId = createClientRequestId(cardId);
 
-      if (!payer || !paymentMethod || !expenseType || !content) {
-        setCardStatus(cardId, "error", "必須項目を入力してください。");
-        return;
-      }
-
-      if (files.length === 0) {
-        setCardStatus(cardId, "error", "レシート写真またはPDFを選択してください。");
+      if (!validateCardBeforeSubmit(cardId)) {
         return;
       }
 
@@ -1035,7 +1127,7 @@
       };
 
       setCardSending(cardId, true);
-      setCardStatus(cardId, "sending", "送信中です。他のカードはそのまま入力できます。");
+      setCardStatus(cardId, "idle", "");
 
       try {
         await fetch(GAS_WEB_APP_URL, {
@@ -1048,7 +1140,8 @@
         });
 
         clearCardAfterSubmit(cardId);
-        setCardStatus(cardId, "success", "送信処理を完了しました。必要に応じて経費台帳をご確認ください。");
+        showGlobalToast(`経費${cardId}を送信しました`, "success", 1600);
+        setCardStatus(cardId, "idle", "");
         addSubmissionHistory({
           cardId,
           status: "送信処理完了",
@@ -1062,6 +1155,7 @@
       } catch (err) {
         console.error(err);
         setCardStatus(cardId, "error", "送信に失敗しました。入力内容と添付ファイルは残しています。通信環境を確認して、もう一度お試しください。");
+        showGlobalToast(`経費${cardId}：送信に失敗しました`, "error", 2200);
         addSubmissionHistory({
           cardId,
           status: "送信失敗",
@@ -1139,6 +1233,7 @@
 
       clearAllFileState(cardId);
       clearDraftInputs(cardId, true);
+      clearCardValidation(cardId);
       setCardStatus(cardId, "idle", "");
       updatePaymentDateHint(cardId);
     }
